@@ -1,0 +1,109 @@
+2025-10-19 22:54:31,210 [INFO] __main__: Starting RentConnect-C3AN Agent System Examples
+2025-10-19 22:54:31,211 [INFO] __main__: ============================================================
+2025-10-19 22:54:31,211 [INFO] __main__: === Property Search Example ===
+2025-10-19 22:54:31,211 [INFO] OrchestrationAgent: Starting property_search workflow
+2025-10-19 22:54:31,211 [INFO] DataIngestionAgent: Simulating fetch from Zillow ZORI
+2025-10-19 22:54:31,211 [INFO] DataIngestionAgent: Decision: Ingested 1 records from zillow_zori | Reasoning: Applied filters: {'city': 'Columbia', 'state': 'SC', 'near_location': {'lat': 33.9937, 'lon': -81.0266}} | Session: b04c80fb-b8e1-4978-bd37-212e44e4d5d9
+2025-10-19 22:54:31,211 [INFO] DataIngestionAgent: Simulating fetch from Columbia SC GIS
+2025-10-19 22:54:31,212 [INFO] DataIngestionAgent: Decision: Ingested 1 records from columbia_gis | Reasoning: Applied filters: {'city': 'Columbia', 'state': 'SC', 'near_location': {'lat': 33.9937, 'lon': -81.0266}} | Session: b04c80fb-b8e1-4978-bd37-212e44e4d5d9
+2025-10-19 22:54:31,212 [INFO] __main__: ✓ Search complete: Property search complete: 0 listings ranked
+2025-10-19 22:54:31,212 [INFO] __main__:   - Total found: 2
+2025-10-19 22:54:31,212 [INFO] __main__:   - Total ranked: 0
+2025-10-19 22:54:31,212 [INFO] __main__: === Roommate Matching Example ===
+2025-10-19 22:54:31,212 [INFO] OrchestrationAgent: Starting roommate_matching workflow
+2025-10-19 22:54:31,212 [INFO] RoommateMatchingAgent: Decision: Matched alice with bob | Reasoning: Compatibility score: 0.75 | Session: fb85377d-d289-4c99-aa6e-ea934dceda85
+2025-10-19 22:54:31,212 [INFO] __main__: ✓ Matching complete: Roommate matching complete: 1 matches
+2025-10-19 22:54:31,212 [INFO] __main__:   Match: alice & bob - Score: 0.75
+2025-10-19 22:54:31,212 [INFO] __main__:     Shared: Both non-smoking, Pet policy: no_pets, Both prefer quiet hours
+2025-10-19 22:54:31,212 [INFO] __main__: === Tour Planning Example ===
+2025-10-19 22:54:31,212 [INFO] OrchestrationAgent: Starting tour_planning workflow
+2025-10-19 22:54:31,212 [ERROR] __main__: Error running examples: unsupported operand type(s) for -: 'float' and 'str'
+Traceback (most recent call last):
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/main.py", line 272, in main
+    example_tour_planning()
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/main.py", line 233, in example_tour_planning
+    result = orchestrator.process(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/orchestration/orchestration_agent.py", line 92, in process
+    result = workflow_func(workflow_input, context, human_review)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/orchestration/orchestration_agent.py", line 357, in _workflow_tour_planning
+    route_result = self.agents['route_planning'].process(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/planning/route_planning_agent.py", line 51, in process
+    route = self._plan_optimal_route(properties, time_windows, start_loc)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/planning/route_planning_agent.py", line 119, in _plan_optimal_route
+    distance = self._estimate_travel_time(current_loc, prop_loc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/planning/route_planning_agent.py", line 154, in _estimate_travel_time
+    dlat = math.radians(lat2 - lat1)
+                        ~~~~~^~~~~~
+TypeError: unsupported operand type(s) for -: 'float' and 'str'
+2025-10-19 22:55:09,134 [INFO] __main__: Starting RentConnect-C3AN Agent System Examples
+2025-10-19 22:55:09,134 [INFO] __main__: ============================================================
+2025-10-19 22:55:09,134 [INFO] __main__: === Property Search Example ===
+2025-10-19 22:55:09,135 [INFO] OrchestrationAgent: Starting property_search workflow
+2025-10-19 22:55:09,135 [INFO] DataIngestionAgent: Simulating fetch from Zillow ZORI
+2025-10-19 22:55:09,135 [INFO] DataIngestionAgent: Decision: Ingested 1 records from zillow_zori | Reasoning: Applied filters: {'city': 'Columbia', 'state': 'SC', 'near_location': {'lat': 33.9937, 'lon': -81.0266}} | Session: afb08172-11c3-4e89-bf91-69a631bf1207
+2025-10-19 22:55:09,135 [INFO] DataIngestionAgent: Simulating fetch from Columbia SC GIS
+2025-10-19 22:55:09,135 [INFO] DataIngestionAgent: Decision: Ingested 1 records from columbia_gis | Reasoning: Applied filters: {'city': 'Columbia', 'state': 'SC', 'near_location': {'lat': 33.9937, 'lon': -81.0266}} | Session: afb08172-11c3-4e89-bf91-69a631bf1207
+2025-10-19 22:55:09,135 [INFO] __main__: ✓ Search complete: Property search complete: 0 listings ranked
+2025-10-19 22:55:09,135 [INFO] __main__:   - Total found: 2
+2025-10-19 22:55:09,135 [INFO] __main__:   - Total ranked: 0
+2025-10-19 22:55:09,135 [INFO] __main__: === Roommate Matching Example ===
+2025-10-19 22:55:09,135 [INFO] OrchestrationAgent: Starting roommate_matching workflow
+2025-10-19 22:55:09,135 [INFO] RoommateMatchingAgent: Decision: Matched alice with bob | Reasoning: Compatibility score: 0.75 | Session: fa019809-b082-4e47-abe2-c75706cdf4fd
+2025-10-19 22:55:09,135 [INFO] __main__: ✓ Matching complete: Roommate matching complete: 1 matches
+2025-10-19 22:55:09,135 [INFO] __main__:   Match: alice & bob - Score: 0.75
+2025-10-19 22:55:09,135 [INFO] __main__:     Shared: Both non-smoking, Pet policy: no_pets, Both prefer quiet hours
+2025-10-19 22:55:09,135 [INFO] __main__: === Tour Planning Example ===
+2025-10-19 22:55:09,136 [INFO] OrchestrationAgent: Starting tour_planning workflow
+2025-10-19 22:55:09,136 [ERROR] __main__: Error running examples: 0
+Traceback (most recent call last):
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/main.py", line 272, in main
+    example_tour_planning()
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/main.py", line 233, in example_tour_planning
+    result = orchestrator.process(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/orchestration/orchestration_agent.py", line 92, in process
+    result = workflow_func(workflow_input, context, human_review)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/orchestration/orchestration_agent.py", line 357, in _workflow_tour_planning
+    route_result = self.agents['route_planning'].process(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/planning/route_planning_agent.py", line 51, in process
+    route = self._plan_optimal_route(properties, time_windows, start_loc)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/planning/route_planning_agent.py", line 119, in _plan_optimal_route
+    distance = self._estimate_travel_time(current_loc, prop_loc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/leeoniisrael/Desktop/Work/AIISC/C3AN/rent-connect-agent/rent-connect-agent/src/agents/planning/route_planning_agent.py", line 150, in _estimate_travel_time
+    lat1, lon1 = float(loc1[0]), float(loc1[1])
+                       ~~~~^^^
+KeyError: 0
+2025-10-19 22:57:04,210 [INFO] __main__: Starting RentConnect-C3AN Agent System Examples
+2025-10-19 22:57:04,211 [INFO] __main__: ============================================================
+2025-10-19 22:57:04,211 [INFO] __main__: === Property Search Example ===
+2025-10-19 22:57:04,211 [INFO] OrchestrationAgent: Starting property_search workflow
+2025-10-19 22:57:04,211 [INFO] DataIngestionAgent: Simulating fetch from Zillow ZORI
+2025-10-19 22:57:04,211 [INFO] DataIngestionAgent: Decision: Ingested 1 records from zillow_zori | Reasoning: Applied filters: {'city': 'Columbia', 'state': 'SC', 'near_location': {'lat': 33.9937, 'lon': -81.0266}} | Session: 7856461a-36cd-40a7-888d-f6a4f04fe749
+2025-10-19 22:57:04,211 [INFO] DataIngestionAgent: Simulating fetch from Columbia SC GIS
+2025-10-19 22:57:04,211 [INFO] DataIngestionAgent: Decision: Ingested 1 records from columbia_gis | Reasoning: Applied filters: {'city': 'Columbia', 'state': 'SC', 'near_location': {'lat': 33.9937, 'lon': -81.0266}} | Session: 7856461a-36cd-40a7-888d-f6a4f04fe749
+2025-10-19 22:57:04,211 [INFO] __main__: ✓ Search complete: Property search complete: 0 listings ranked
+2025-10-19 22:57:04,211 [INFO] __main__:   - Total found: 2
+2025-10-19 22:57:04,211 [INFO] __main__:   - Total ranked: 0
+2025-10-19 22:57:04,211 [INFO] __main__: === Roommate Matching Example ===
+2025-10-19 22:57:04,212 [INFO] OrchestrationAgent: Starting roommate_matching workflow
+2025-10-19 22:57:04,212 [INFO] RoommateMatchingAgent: Decision: Matched alice with bob | Reasoning: Compatibility score: 0.75 | Session: be330d38-5cb4-4dea-abd5-089cd26f4d20
+2025-10-19 22:57:04,212 [INFO] __main__: ✓ Matching complete: Roommate matching complete: 1 matches
+2025-10-19 22:57:04,212 [INFO] __main__:   Match: alice & bob - Score: 0.75
+2025-10-19 22:57:04,212 [INFO] __main__:     Shared: Both non-smoking, Pet policy: no_pets, Both prefer quiet hours
+2025-10-19 22:57:04,212 [INFO] __main__: === Tour Planning Example ===
+2025-10-19 22:57:04,212 [INFO] OrchestrationAgent: Starting tour_planning workflow
+2025-10-19 22:57:04,212 [INFO] __main__: ✓ Tour planned: Tour planned: 3 properties
+2025-10-19 22:57:04,212 [INFO] __main__:   → 456 College Ave at 2025-10-20 08:01:00.211201
+2025-10-19 22:57:04,212 [INFO] __main__:   → 123 Main St at 2025-10-20 08:01:55.300476
+2025-10-19 22:57:04,212 [INFO] __main__:   → 789 University Way at 2025-10-20 08:01:08.606625
+2025-10-19 22:57:04,212 [INFO] __main__: ============================================================
+2025-10-19 22:57:04,212 [INFO] __main__: All examples completed successfully!

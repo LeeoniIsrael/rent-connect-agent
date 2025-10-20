@@ -3,7 +3,7 @@ Route Planning Agent
 Time-windowed routing for property tours around class schedules and transit.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from datetime import datetime, timedelta
 from ..base_agent import BaseAgent, AgentContext, AgentOutput
 
@@ -95,7 +95,7 @@ class RoutePlanningAgent(BaseAgent):
         self,
         properties: List[Dict],
         time_windows: List[Tuple[datetime, datetime]],
-        start_loc: Optional[Tuple[float, float]]
+        start_loc: Optional[Union[Tuple[float, float], Dict]]
     ) -> List[Dict]:
         """
         Plan optimal route using nearest-neighbor heuristic (TSP approximation).
@@ -103,7 +103,13 @@ class RoutePlanningAgent(BaseAgent):
         """
         route = []
         remaining = properties.copy()
-        current_loc = start_loc or (33.9937, -81.0266)  # Default: USC campus
+        
+        # Handle start_loc - can be tuple (lat, lon) or dict {'lat': x, 'lon': y}
+        if isinstance(start_loc, dict):
+            current_loc = (start_loc.get('lat', 33.9937), start_loc.get('lon', -81.0266))
+        else:
+            current_loc = start_loc or (33.9937, -81.0266)  # Default: USC campus
+        
         current_time_idx = 0
         
         while remaining and current_time_idx < len(time_windows):
@@ -147,8 +153,8 @@ class RoutePlanningAgent(BaseAgent):
         """Estimate travel time in minutes"""
         # Simple distance-based estimate
         import math
-        lat1, lon1 = loc1
-        lat2, lon2 = loc2
+        lat1, lon1 = float(loc1[0]), float(loc1[1])
+        lat2, lon2 = float(loc2[0]), float(loc2[1])
         
         # Haversine distance
         dlat = math.radians(lat2 - lat1)
