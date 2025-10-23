@@ -107,3 +107,28 @@ KeyError: 0
 2025-10-19 22:57:04,212 [INFO] __main__:   → 789 University Way at 2025-10-20 08:01:08.606625
 2025-10-19 22:57:04,212 [INFO] __main__: ============================================================
 2025-10-19 22:57:04,212 [INFO] __main__: All examples completed successfully!
+2025-10-22 11:03:55,486 [INFO] __main__: Starting RentConnect-C3AN Agent System Examples
+2025-10-22 11:03:55,486 [INFO] __main__: ============================================================
+2025-10-22 11:03:55,486 [INFO] __main__: === Property Search Example ===
+2025-10-22 11:03:55,486 [INFO] OrchestrationAgent: Starting property_search workflow
+2025-10-22 11:03:55,486 [INFO] DataIngestionAgent: Simulating fetch from Zillow ZORI
+2025-10-22 11:03:55,486 [INFO] DataIngestionAgent: Decision: Ingested 1 records from zillow_zori | Reasoning: Applied filters: {'city': 'Columbia', 'state': 'SC', 'near_location': {'lat': 33.9937, 'lon': -81.0266}} | Session: 73b4e4c3-cab7-4012-8bc7-5beac7c56953
+2025-10-22 11:03:55,486 [INFO] DataIngestionAgent: Simulating fetch from Columbia SC GIS
+2025-10-22 11:03:55,486 [INFO] DataIngestionAgent: Decision: Ingested 1 records from columbia_gis | Reasoning: Applied filters: {'city': 'Columbia', 'state': 'SC', 'near_location': {'lat': 33.9937, 'lon': -81.0266}} | Session: 73b4e4c3-cab7-4012-8bc7-5beac7c56953
+2025-10-22 11:03:55,487 [INFO] __main__: ✓ Search complete: Property search complete: 0 listings ranked
+2025-10-22 11:03:55,487 [INFO] __main__:   - Total found: 2
+2025-10-22 11:03:55,487 [INFO] __main__:   - Total ranked: 0
+2025-10-22 11:03:55,487 [INFO] __main__: === Roommate Matching Example ===
+2025-10-22 11:03:55,487 [INFO] OrchestrationAgent: Starting roommate_matching workflow
+2025-10-22 11:03:55,487 [INFO] RoommateMatchingAgent: Decision: Matched alice with bob | Reasoning: Compatibility score: 0.75 | Session: 95ddd48c-0f69-4c2a-aceb-1808211fd11f
+2025-10-22 11:03:55,487 [INFO] __main__: ✓ Matching complete: Roommate matching complete: 1 matches
+2025-10-22 11:03:55,487 [INFO] __main__:   Match: alice & bob - Score: 0.75
+2025-10-22 11:03:55,487 [INFO] __main__:     Shared: Both non-smoking, Pet policy: no_pets, Both prefer quiet hours
+2025-10-22 11:03:55,487 [INFO] __main__: === Tour Planning Example ===
+2025-10-22 11:03:55,487 [INFO] OrchestrationAgent: Starting tour_planning workflow
+2025-10-22 11:03:55,487 [INFO] __main__: ✓ Tour planned: Tour planned: 3 properties
+2025-10-22 11:03:55,487 [INFO] __main__:   → 456 College Ave at 2025-10-20 08:01:00.211201
+2025-10-22 11:03:55,487 [INFO] __main__:   → 123 Main St at 2025-10-20 08:01:55.300476
+2025-10-22 11:03:55,487 [INFO] __main__:   → 789 University Way at 2025-10-20 08:01:08.606625
+2025-10-22 11:03:55,487 [INFO] __main__: ============================================================
+2025-10-22 11:03:55,487 [INFO] __main__: All examples completed successfully!
