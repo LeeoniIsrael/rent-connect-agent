@@ -1,268 +1,311 @@
 """
 Main entry point for RentConnect-C3AN Agent System
-Example usage and API endpoints
+Refactored Architecture: Preprocessing → Tools → Agents → Workflows
+
+New Structure (No Orchestration Agent):
+- Preprocessing: Data collection and cleaning
+- Tools: Analysis and lookup utilities
+- Agents: 4 decision-making agents
+- Workflows: Direct agent coordination
 """
 
 import logging
-import logging.config
 from datetime import datetime
-import uuid
 
-from src.agents.orchestration.orchestration_agent import OrchestrationAgent
-from src.agents.base_agent import AgentContext
-from config import AGENT_CONFIG, LOGGING_CONFIG, CAMPUS_CONFIG
+# Import preprocessing modules
+from src.preprocessing import DataIngestion, SurveyIngestion
+
+# Import tools (singletons)
+from src.tools import knowledge_graph, listing_analyzer, compliance_checker
+
+# Import agents (singletons)
+from src.agents import (
+    roommate_matching,
+    ranking_scoring,
+    route_planning,
+    feedback_learning
+)
+
+# Import configurations
+from config import CAMPUS_CONFIG
 
 # Setup logging
-logging.config.dictConfig(LOGGING_CONFIG)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 
-def create_context(user_id: str = None, metadata: dict = None) -> AgentContext:
-    """Helper to create agent context"""
-    return AgentContext(
-        session_id=str(uuid.uuid4()),
-        user_id=user_id or "anonymous",
-        timestamp=datetime.utcnow(),
-        metadata=metadata or {}
-    )
-
-
 def example_property_search():
-    """Example: Property Search & Ranking Workflow"""
+    """Example: Property Search & Ranking Workflow (Refactored)"""
     logger.info("=== Property Search Example ===")
     
-    # Initialize orchestrator
-    orchestrator = OrchestrationAgent(config=AGENT_CONFIG)
+    # Step 1: Collect data (Preprocessing)
+    data_ingestion = DataIngestion()
     
-    # Create context
-    context = create_context(
-        user_id="student123",
-        metadata={
-            'desired_amenities': ['parking', 'ac', 'laundry', 'wifi'],
-            'student_verified': True
+    logger.info("Collecting rental listings...")
+    result = data_ingestion.ingest_listings(
+        sources=['zillow_zori', 'columbia_gis'],
+        filters={
+            'location': CAMPUS_CONFIG['main_campus_location'],
+            'radius_km': 5.0,
+            'price_max': 2000
         }
     )
     
-    # Run property search
-    result = orchestrator.process(
-        {
-            'workflow': 'property_search',
-            'workflow_input': {
-                'data_sources': ['zillow_zori', 'columbia_gis'],
-                'filters': {
-                    'city': 'Columbia',
-                    'state': 'SC',
-                    'near_location': CAMPUS_CONFIG['main_campus_location']
-                },
-                'preferences': {
-                    'weights': {
-                        'price': 0.35,
-                        'commute_time': 0.30,
-                        'safety_score': 0.20,
-                        'amenities_match': 0.15
-                    }
-                },
-                'constraints': {
-                    'max_budget': 1000,
-                    'min_bedrooms': 1,
-                    'max_commute_minutes': 30,
-                    'required_amenities': ['ac']
-                }
-            },
-            'human_review': True
+    listings = result.get('records', [])
+    logger.info(f"✓ Collected {len(listings)} listings")
+    
+    # Step 2: Analyze listings (Tools)
+    logger.info("Analyzing listings for scams and compliance...")
+    safe_listings = []
+    
+    for listing in listings[:10]:  # Limit to 10 for demo
+        # Check for scams
+        risk = listing_analyzer.analyze_listing(listing)
+        
+        if risk['risk_score'] < 0.7:  # Not high-risk
+            # Check compliance
+            compliance = compliance_checker.check_compliance(listing)
+            
+            if compliance['compliant']:
+                listing['safety_score'] = compliance['safety_score']
+                safe_listings.append(listing)
+    
+    logger.info(f"✓ {len(safe_listings)} safe, compliant listings")
+    
+    # Step 3: Rank properties (Agent Decision)
+    logger.info("Ranking properties...")
+    
+    user_preferences = {
+        'weights': {
+            'price': 0.35,
+            'commute_time': 0.30,
+            'safety_score': 0.20,
+            'amenities_match': 0.10,
+            'lease_suitability': 0.05
         },
-        context
+        'hard_constraints': {
+            'max_price': 1500,
+            'max_commute': 45,
+            'min_safety': 0.6
+        }
+    }
+    
+    destination = (
+        CAMPUS_CONFIG['main_campus_location']['lat'],
+        CAMPUS_CONFIG['main_campus_location']['lon']
     )
     
-    if result.result:
-        logger.info(f"✓ Search complete: {result.explanation}")
-        logger.info(f"  - Total found: {result.result['total_found']}")
-        logger.info(f"  - Total ranked: {result.result['total_ranked']}")
-        
-        # Show top 3
-        for listing in result.result['ranked_listings'][:3]:
-            logger.info(f"  #{listing['rank']}: Score {listing['overall_score']:.2f}")
-            logger.info(f"    {listing.get('explanation', '')[:100]}...")
-    else:
-        logger.error(f"✗ Search failed: {result.errors}")
+    result = ranking_scoring.rank(safe_listings, user_preferences, destination)
+    
+    logger.info(f"✓ Ranked {len(result.ranked_listings)} properties")
+    logger.info(f"✓ Pareto-optimal properties: {len(result.pareto_frontier)}")
+    
+    # Show top 3
+    logger.info("\nTop 3 Properties:")
+    for listing in result.ranked_listings[:3]:
+        logger.info(f"  #{listing['rank']}: {listing['listing_id']}")
+        logger.info(f"    Score: {listing['overall_score']:.2f}")
+        logger.info(f"    Pareto optimal: {listing['is_pareto_optimal']}")
+        if listing['listing_id'] in result.explanations:
+            logger.info(f"    {result.explanations[listing['listing_id']][:100]}...")
 
 
 def example_roommate_matching():
-    """Example: Roommate Matching Workflow"""
+    """Example: Roommate Matching Workflow (Refactored)"""
     logger.info("=== Roommate Matching Example ===")
     
-    orchestrator = OrchestrationAgent(config=AGENT_CONFIG)
-    context = create_context(user_id="matching_service")
+    # Step 1: Process surveys (Preprocessing)
+    survey_ingestion = SurveyIngestion()
     
-    # Sample profiles
-    profiles = [
+    # Sample survey data (matching SurveyIngestion.process_survey() expected format)
+    surveys = [
         {
-            'user_id': 'alice',
-            'hard_constraints': {
-                'no_smoking': True,
-                'pet_policy': 'no_pets',
-                'quiet_hours': True
-            },
-            'soft_preferences': {
-                'cleanliness': 8,
-                'social_level': 5,
-                'schedule_match': 'morning_person'
-            },
-            'personality': {
-                'openness': 0.7,
-                'conscientiousness': 0.8,
-                'extraversion': 0.4,
-                'agreeableness': 0.8,
-                'neuroticism': 0.3
-            },
-            'budget_range': (600, 900)
+            'student_id': 'alice',
+            'name': 'Alice Smith',
+            'email': 'alice@email.com',
+            'smoking': 'no',
+            'pets': 'yes',
+            'quiet_hours': True,
+            'budget_min': 800,
+            'budget_max': 1200,
+            'cleanliness': 8,
+            'social_level': 6,
+            'schedule': 7,
+            'conscientiousness': 4,
+            'agreeableness': 4,
+            'extraversion': 3,
+            'openness': 4,
+            'neuroticism': 2
         },
         {
-            'user_id': 'bob',
-            'hard_constraints': {
-                'no_smoking': True,
-                'pet_policy': 'no_pets',
-                'quiet_hours': True
-            },
-            'soft_preferences': {
-                'cleanliness': 7,
-                'social_level': 6,
-                'schedule_match': 'morning_person'
-            },
-            'personality': {
-                'openness': 0.6,
-                'conscientiousness': 0.7,
-                'extraversion': 0.5,
-                'agreeableness': 0.7,
-                'neuroticism': 0.4
-            },
-            'budget_range': (650, 950)
+            'student_id': 'bob',
+            'name': 'Bob Jones',
+            'email': 'bob@email.com',
+            'smoking': 'no',
+            'pets': 'yes',
+            'quiet_hours': True,
+            'budget_min': 900,
+            'budget_max': 1300,
+            'cleanliness': 8,
+            'social_level': 6,
+            'schedule': 6,
+            'conscientiousness': 4,
+            'agreeableness': 5,
+            'extraversion': 4,
+            'openness': 3,
+            'neuroticism': 2
         },
         {
-            'user_id': 'charlie',
-            'hard_constraints': {
-                'no_smoking': False,
-                'pet_policy': 'cats_ok',
-                'quiet_hours': False
-            },
-            'soft_preferences': {
-                'cleanliness': 5,
-                'social_level': 8,
-                'schedule_match': 'night_owl'
-            },
-            'personality': {
-                'openness': 0.8,
-                'conscientiousness': 0.5,
-                'extraversion': 0.8,
-                'agreeableness': 0.6,
-                'neuroticism': 0.5
-            },
-            'budget_range': (500, 800)
+            'student_id': 'charlie',
+            'name': 'Charlie Brown',
+            'email': 'charlie@email.com',
+            'smoking': 'yes',
+            'pets': 'yes',
+            'quiet_hours': False,
+            'budget_min': 700,
+            'budget_max': 1000,
+            'cleanliness': 6,
+            'social_level': 8,
+            'schedule': 3,
+            'conscientiousness': 3,
+            'agreeableness': 4,
+            'extraversion': 5,
+            'openness': 5,
+            'neuroticism': 3
         }
     ]
     
-    result = orchestrator.process(
-        {
-            'workflow': 'roommate_matching',
-            'workflow_input': {
-                'profiles': profiles,
-                'match_type': 'one_to_one'
-            },
-            'human_review': False
-        },
-        context
-    )
+    logger.info("Processing roommate surveys...")
+    processed_surveys = [survey_ingestion.process_survey(s) for s in surveys]
+    logger.info(f"✓ Processed {len(processed_surveys)} profiles")
     
-    if result.result:
-        logger.info(f"✓ Matching complete: {result.explanation}")
-        matches = result.result['matches']
-        
-        for match in matches:
-            users = match.get('users', [])
-            score = match.get('compatibility_score', 0)
-            logger.info(f"  Match: {' & '.join(users)} - Score: {score:.2f}")
-            logger.info(f"    Shared: {', '.join(match.get('shared_constraints', []))}")
-    else:
-        logger.error(f"✗ Matching failed: {result.errors}")
+    # Transform to format expected by RoommateMatching agent
+    profiles = []
+    for survey in processed_surveys:
+        profiles.append({
+            'user_id': survey['profile']['student_id'],
+            'hard_constraints': survey['hard_constraints'],
+            'soft_preferences': survey['soft_preferences'],
+            'personality': survey['personality_scores']
+        })
+    
+    # Step 2: Match roommates (Agent Decision)
+    logger.info("Matching roommates...")
+    result = roommate_matching.match(profiles)
+    
+    logger.info(f"✓ Created {len(result.matches)} matches")
+    logger.info(f"✓ Unmatched: {len(result.unmatched)} users")
+    logger.info(f"✓ Blocking pairs: {result.blocking_pairs} (should be 0)")
+    logger.info(f"✓ Match rate: {result.fairness_metrics['match_rate']:.1%}")
+    logger.info(f"✓ Mean compatibility: {result.fairness_metrics['mean_compatibility']:.2f}")
+    
+    # Show matches
+    logger.info("\nMatches:")
+    for match in result.matches:
+        logger.info(f"  Match {match['match_id']}:")
+        logger.info(f"    Users: {', '.join(match['participants'])}")
+        logger.info(f"    Compatibility: {match['compatibility_score']:.2f}")
+        logger.info(f"    Shared: {match['shared_constraints']}")
 
 
 def example_tour_planning():
-    """Example: Tour Planning Workflow"""
+    """Example: Tour Planning Workflow (Refactored)"""
     logger.info("=== Tour Planning Example ===")
     
-    orchestrator = OrchestrationAgent(config=AGENT_CONFIG)
-    context = create_context(user_id="student456")
+    # Sample properties to visit (from previous ranking)
+    properties_to_visit = [
+        {'listing_id': 'prop1', 'latitude': 33.995, 'longitude': -81.030},
+        {'listing_id': 'prop2', 'latitude': 33.991, 'longitude': -81.025},
+        {'listing_id': 'prop3', 'latitude': 33.998, 'longitude': -81.028}
+    ]
     
     # Sample class schedule
-    base_date = datetime(2025, 10, 20)
     class_schedule = [
-        {
-            'name': 'CSCI 101',
-            'start_time': base_date.replace(hour=9, minute=30),
-            'end_time': base_date.replace(hour=10, minute=45)
-        },
-        {
-            'name': 'MATH 141',
-            'start_time': base_date.replace(hour=13, minute=0),
-            'end_time': base_date.replace(hour=14, minute=15)
-        }
+        {'start': '09:00', 'end': '10:30'},  # Morning class
+        {'start': '14:00', 'end': '15:30'}   # Afternoon class
     ]
     
-    # Sample properties to visit
-    properties = [
-        {
+    logger.info("Planning property viewing tour...")
+    result = route_planning.plan_route(properties_to_visit, class_schedule)
+    
+    logger.info(f"✓ Tour feasible: {result.feasible}")
+    logger.info(f"✓ Total stops: {len(result.stops)}")
+    logger.info(f"✓ Total duration: {result.total_duration} minutes")
+    logger.info(f"✓ Time window violations: {result.time_window_violations}")
+    
+    # Show route
+    logger.info("\nTour Schedule:")
+    for i, stop in enumerate(result.stops, 1):
+        logger.info(f"  Stop {i}: {stop['listing_id']}")
+        logger.info(f"    Arrival: {stop['arrival_time']}")
+        logger.info(f"    Departure: {stop['departure_time']}")
+        logger.info(f"    Viewing: {stop['viewing_duration']} min")
+
+
+def example_feedback_learning():
+    """Example: Feedback & Learning (Refactored)"""
+    logger.info("=== Feedback & Learning Example ===")
+    
+    # Example 1: User rates a recommendation
+    logger.info("Processing user rating feedback...")
+    
+    rating_feedback = {
+        'feedback_id': 'fb1',
+        'type': 'rating',
+        'user_id': 'alice',
+        'rating': 5,
+        'context': {
             'listing_id': 'prop1',
-            'address': '123 Main St',
-            'lat': 33.995,
-            'lon': -81.030
-        },
-        {
-            'listing_id': 'prop2',
-            'address': '456 College Ave',
-            'lat': 33.991,
-            'lon': -81.025
-        },
-        {
-            'listing_id': 'prop3',
-            'address': '789 University Way',
-            'lat': 33.998,
-            'lon': -81.028
+            'criteria_scores': {
+                'price': 0.9,
+                'commute_time': 0.8,
+                'safety_score': 0.85,
+                'amenities_match': 0.7,
+                'lease_suitability': 0.8
+            }
         }
-    ]
+    }
     
-    result = orchestrator.process(
-        {
-            'workflow': 'tour_planning',
-            'workflow_input': {
-                'properties': properties,
-                'class_schedule': class_schedule,
-                'tour_date': base_date,
-                'start_location': CAMPUS_CONFIG['main_campus_location']
-            },
-            'human_review': False
-        },
-        context
-    )
+    result = feedback_learning.process_feedback(rating_feedback)
+    logger.info(f"✓ Feedback applied: {result.applied}")
+    logger.info(f"✓ Impact: {result.impact_summary}")
+    logger.info(f"✓ Drift detected: {result.drift_detected}")
     
-    if result.result:
-        logger.info(f"✓ Tour planned: {result.explanation}")
-        route = result.result['route']
-        
-        for stop in route:
-            prop = stop['property']
-            arrival = stop.get('arrival_time', 'TBD')
-            logger.info(f"  → {prop.get('address')} at {arrival}")
-    else:
-        logger.error(f"✗ Tour planning failed: {result.errors}")
+    # Example 2: Expert correction
+    logger.info("\nProcessing expert correction...")
+    
+    correction_feedback = {
+        'feedback_id': 'fb2',
+        'type': 'correction',
+        'target': 'scam_detector',
+        'listing_id': 'prop2',
+        'corrected_risk_score': 0.95,
+        'expert_confidence': 0.90
+    }
+    
+    result = feedback_learning.process_feedback(correction_feedback)
+    logger.info(f"✓ Correction applied: {result.applied}")
+    logger.info(f"✓ Impact: {result.impact_summary}")
+    
+    # Show updated preferences
+    updated_prefs = feedback_learning.get_user_preferences('alice')
+    logger.info(f"\nUpdated preferences for alice:")
+    logger.info(f"  Weights: {updated_prefs['weights']}")
 
 
 def main():
-    """Run all examples"""
-    logger.info("Starting RentConnect-C3AN Agent System Examples")
-    logger.info("=" * 60)
+    """Run all workflow examples"""
+    logger.info("=" * 70)
+    logger.info("RentConnect-C3AN Agent System - Refactored Architecture")
+    logger.info("4 Agents + Preprocessing + Tools (No Orchestration)")
+    logger.info("=" * 70)
+    logger.info("")
     
     try:
-        # Run examples
+        # Run workflow examples
         example_property_search()
         print("\n")
         
@@ -272,11 +315,15 @@ def main():
         example_tour_planning()
         print("\n")
         
-        logger.info("=" * 60)
-        logger.info("All examples completed successfully!")
+        example_feedback_learning()
+        print("\n")
+        
+        logger.info("=" * 70)
+        logger.info("✅ All workflow examples completed successfully!")
+        logger.info("=" * 70)
         
     except Exception as e:
-        logger.error(f"Error running examples: {e}", exc_info=True)
+        logger.error(f"❌ Error running examples: {e}", exc_info=True)
 
 
 if __name__ == "__main__":

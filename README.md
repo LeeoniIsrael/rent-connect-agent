@@ -22,33 +22,137 @@ RentConnect-C3AN is a neurosymbolic mobile platform that helps university studen
 ✅ **Reasoning & Planning**: Multi-criteria scoring, constraint satisfaction, route optimization  
 ✅ **Instructability**: User-tunable weights without retraining  
 
-## Agent Architecture
+## Refactored Architecture (October 2024)
 
-### 10 Specialized Agents
+**Principle**: "Only things making autonomous decisions are agents"
 
-1. **Data Ingestion Agent** - Collects listings, surveys, safety data from multiple sources
-2. **Knowledge Graph Agent** - Stores Fair Housing rules, campus zones, transit data, policies
-3. **Listing Analysis Agent** - Neural scam detection, price anomaly detection, feature extraction
-4. **Image Analysis Agent** - Listing photo quality and authenticity verification
-5. **Roommate Matching Agent** - Stable matching with hard/soft constraints and fairness
-6. **Ranking & Scoring Agent** - Multi-objective optimization (budget, commute, safety, amenities)
-7. **Commute Scoring Agent** - Multi-modal transit time computation
-8. **Route Planning Agent** - Time-windowed tour planning around class schedules
-9. **Compliance & Safety Agent** - FHA compliance checks, safety scoring
-10. **Explanation Agent** - Generates transparent explanations for all decisions
-11. **Feedback & Learning Agent** - Learns from user/expert feedback
-12. **Orchestration Agent** - Coordinates all agents with workflow management
+### System Layers
+
+```
+┌─────────────────────────────────────────┐
+│         USER INPUT / FEEDBACK           │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│     PREPROCESSING LAYER                 │
+│  • DataIngestion (multi-source)         │
+│  • SurveyIngestion (FHA-compliant)      │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│         TOOLS LAYER                     │
+│  • knowledge_graph (symbolic KB)        │
+│  • listing_analyzer (scam detection)    │
+│  • image_analyzer (photo quality)       │
+│  • compliance_checker (FHA/SC laws)     │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│      AGENT LAYER (Decision-Makers)      │
+│  1. roommate_matching                   │
+│  2. ranking_scoring                     │
+│  3. route_planning                      │
+│  4. feedback_learning                   │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│     WORKFLOWS (Direct Coordination)     │
+│  • Property Search                      │
+│  • Roommate Matching                    │
+│  • Tour Planning                        │
+└─────────────────────────────────────────┘
+```
+
+### 4 Decision-Making Agents
+
+1. **Roommate Matching Agent** (`roommate_matching`)
+   - Stable matching with constraint satisfaction (Gale-Shapley variant)
+   - Hard constraints: smoking, pets, quiet hours, budget
+   - Soft preferences: cleanliness, social level, schedule
+   - Personality: Big Five (OCEAN) compatibility
+   - **C³AN Metrics**: Stability Score (95%), Fairness Score (≤0.15 variance), Hard Constraint Satisfaction (100%)
+
+2. **Ranking & Scoring Agent** (`ranking_scoring`)
+   - Multi-objective property ranking with Pareto optimality
+   - Criteria: price, commute, safety, amenities, lease terms
+   - User-tunable weights (instructability)
+   - **C³AN Metrics**: Pareto Efficiency (≥70% in top-10), Weight Correlation (r≥0.80), Score Attributability (100%)
+
+3. **Route Planning Agent** (`route_planning`)
+   - Time-windowed tour planning around class schedules
+   - Nearest-neighbor TSP heuristic
+   - Multi-modal transit optimization
+   - **C³AN Metrics**: Time Window Compliance (100%), Route Optimality (≥30% vs random), Tour Completion (≥80%)
+
+4. **Feedback & Learning Agent** (`feedback_learning`)
+   - Learns from user ratings and expert corrections
+   - Preference drift detection
+   - Expert-verified high-impact updates
+   - **C³AN Metrics**: Incorporation Rate (≥90%), Improvement Rate (≥10%), Expert Verification (100% for high-impact)
 
 ## Project Structure
 
 ```
 rent-connect-agent/
 ├── src/
-│   └── agents/
-│       ├── base_agent.py                    # Base agent interface
-│       ├── ingestion/
-│       │   └── data_ingestion_agent.py      # Data collection
-│       ├── knowledge/
+│   ├── preprocessing/           # Data collection & cleaning
+│   │   ├── data_ingestion.py   # Multi-source listings (Zillow, Redfin, GIS)
+│   │   └── survey_ingestion.py # FHA-compliant survey processing
+│   ├── tools/                   # Analysis & lookup utilities (singletons)
+│   │   ├── knowledge_graph.py  # Symbolic KB (FHA rules, campus zones)
+│   │   ├── listing_analyzer.py # Scam detection, feature extraction
+│   │   ├── image_analyzer.py   # Photo quality & authenticity
+│   │   └── compliance_checker.py # FHA & SC lease law compliance
+│   └── agents/                  # 4 decision-making agents
+│       ├── roommate_matching/   # Stable matching agent
+│       │   ├── README.md       # Full documentation
+│       │   ├── config.py       # Agent-specific settings
+│       │   ├── evaluation.md   # C³AN metrics definitions
+│       │   └── agent.py        # Implementation
+│       ├── ranking_scoring/     # Multi-objective ranking
+│       ├── route_planning/      # Time-windowed tour planning
+│       └── feedback_learning/   # Learning from feedback
+├── config/                      # Configuration layer
+│   ├── preprocessing_config.py  # Data ingestion settings
+│   ├── tools_config.py         # Tool parameters
+│   └── agents_config.py        # Agent settings + HITL
+├── tests/                       # Unit & integration tests
+├── main.py                      # Workflow examples (no orchestration)
+├── test_system.py              # Quick verification script
+├── HOW_TO_RUN.md               # Simple usage guide
+├── QUICK_START.md              # Detailed examples
+├── IMPLEMENTATION_SUMMARY.md   # Refactoring documentation
+└── REFACTORING_GUIDE.md        # Migration details
+```
+
+## Quick Start
+
+### 1. Test the System
+```bash
+python test_system.py
+```
+
+### 2. Run Example Workflows
+```bash
+python main.py
+```
+
+### 3. Use in Your Code
+```python
+from src.agents import roommate_matching, ranking_scoring
+
+# Match roommates
+profiles = [...]  # User survey data
+result = roommate_matching.match(profiles)
+
+# Rank properties  
+listings = [...]  # Rental listings
+result = ranking_scoring.rank(listings, user_preferences, destination)
+```
+
+See `HOW_TO_RUN.md` for more examples.
+
+## Key Features
 │       │   └── knowledge_graph_agent.py     # Knowledge graph & rules
 │       ├── analysis/
 │       │   └── listing_analysis_agent.py    # Scam detection, risk scoring

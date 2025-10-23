@@ -170,8 +170,8 @@ class RoutePlanningAgent:
     
     def _minutes_to_time(self, minutes: int) -> str:
         """Convert minutes since midnight to 'HH:MM'"""
-        hours = minutes // 60
-        mins = minutes % 60
+        hours = int(minutes // 60)
+        mins = int(minutes % 60)
         return f"{hours:02d}:{mins:02d}"
     
     def _build_distance_matrix(self, properties: List[Dict[str, Any]]) -> List[List[float]]:

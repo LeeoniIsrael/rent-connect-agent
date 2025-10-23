@@ -119,15 +119,43 @@ class SurveyIngestion:
         Hard constraints are non-negotiable requirements:
         - smoking: yes/no
         - pets: yes/no/no_preference
-        - quiet_hours: yes/no
-        - budget_min/max: numeric range
+        - has_pets: boolean (do they currently have pets)
+        - allows_pets: boolean (would they accept a roommate with pets)
+        - quiet_hours: tuple (start_hour, end_hour) for quiet time
+        - budget_range: tuple (min, max) budget range
         """
+        # Convert quiet_hours from boolean to tuple format
+        quiet_hours_bool = survey_data.get('quiet_hours', False)
+        if isinstance(quiet_hours_bool, bool):
+            quiet_hours = (22, 7) if quiet_hours_bool else (23, 8)  # Default ranges
+        else:
+            quiet_hours = quiet_hours_bool  # Already a tuple
+        
+        # Handle pets - convert to has_pets and allows_pets
+        pets = survey_data.get('pets', 'no_preference')
+        if pets == 'yes':
+            has_pets = True
+            allows_pets = True
+        elif pets == 'no':
+            has_pets = False
+            allows_pets = True  # Doesn't have but okay with roommate having
+        else:  # no_preference
+            has_pets = False
+            allows_pets = True
+        
+        # Convert smoking from yes/no to boolean
+        smoking_str = survey_data.get('smoking', 'no')
+        smoking = (smoking_str == 'yes')
+        
         return {
-            'smoking': survey_data.get('smoking', 'no'),
-            'pets': survey_data.get('pets', 'no_preference'),
-            'quiet_hours': survey_data.get('quiet_hours', False),
-            'budget_min': float(survey_data.get('budget_min', 0)),
-            'budget_max': float(survey_data.get('budget_max', 2000))
+            'smoking': smoking,
+            'has_pets': has_pets,
+            'allows_pets': allows_pets,
+            'quiet_hours': quiet_hours,
+            'budget_range': (
+                float(survey_data.get('budget_min', 0)),
+                float(survey_data.get('budget_max', 2000))
+            )
         }
     
     def _extract_soft_preferences(self, survey_data: Dict) -> Dict[str, float]:
