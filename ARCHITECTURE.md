@@ -1,5 +1,11 @@
 # RentConnect-C3AN System Architecture
 
+**Current Version**: Refactored (October 2024)  
+**Architecture**: 3-Layer System (Preprocessing → Tools → Agents)  
+**No Orchestration Agent**: Direct workflow coordination
+
+---
+
 ## High-Level Architecture
 
 ```
@@ -14,95 +20,131 @@
 │                  (Vercel / Google Cloud Functions)                   │
 │                                                                      │
 │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │              Orchestration Agent (Main Controller)            │  │
-│  │  • Workflow Management                                        │  │
-│  │  • Agent Coordination                                         │  │
-│  │  • Human-in-the-loop Review                                   │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                             │                                        │
-│         ┌───────────────────┼───────────────────┐                   │
-│         ▼                   ▼                   ▼                   │
-│  ┌──────────┐      ┌──────────────┐     ┌──────────────┐          │
-│  │ Ingestion│      │   Analysis   │     │   Decision   │          │
-│  │  Agents  │      │    Agents    │     │    Agents    │          │
-│  └──────────┘      └──────────────┘     └──────────────┘          │
-│       │                    │                     │                  │
-│       ├─ Data Ingestion    ├─ Listing Analysis   ├─ Ranking        │
-│       └─ Survey Ingestion  ├─ Image Analysis     ├─ Matching       │
-│                            └─ Risk Detection     ├─ Route Planning  │
-│                                                  └─ Compliance      │
-│                                                                      │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │           Knowledge Graph Agent (Symbolic Layer)             │  │
-│  │  • Fair Housing Act Rules                                     │  │
-│  │  • Campus Zones & Buildings                                   │  │
-│  │  • Transit Network (GTFS)                                     │  │
-│  │  • Lease Term Taxonomies                                      │  │
-│  │  • Safety Event Data                                          │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                      │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │      Explanation & Feedback Agents (Trust Layer)             │  │
-│  │  • Decision Explanations                                      │  │
-│  │  • Attribution & Traceability                                 │  │
-│  │  • User Feedback Processing                                   │  │
-│  │  • Continuous Learning                                        │  │
+│  │                    WORKFLOWS                                  │  │
+│  │  • Property Search                                            │  │
+│  │  • Roommate Matching                                          │  │
+│  │  • Tour Planning                                              │  │
+│  │  • Feedback Learning                                          │  │
+│  │  (Direct coordination - no orchestration agent)               │  │
+│  └────────────────────┬─────────────────────────────────────────┘  │
+│                       │                                              │
+│  ┌────────────────────▼─────────────────────────────────────────┐  │
+│  │              PREPROCESSING LAYER                              │  │
+│  │  ├─ DataIngestion (multi-source data collection)             │  │
+│  │  └─ SurveyIngestion (FHA-compliant survey processing)        │  │
+│  └────────────────────┬─────────────────────────────────────────┘  │
+│                       │                                              │
+│  ┌────────────────────▼─────────────────────────────────────────┐  │
+│  │                 TOOLS LAYER (Singletons)                      │  │
+│  │  ├─ knowledge_graph (FHA rules, SC laws, campus zones)       │  │
+│  │  ├─ listing_analyzer (scam detection, feature extraction)    │  │
+│  │  ├─ image_analyzer (photo quality, authenticity)             │  │
+│  │  └─ compliance_checker (FHA/SC lease compliance)             │  │
+│  └────────────────────┬─────────────────────────────────────────┘  │
+│                       │                                              │
+│  ┌────────────────────▼─────────────────────────────────────────┐  │
+│  │            AGENT LAYER (Decision-Makers)                      │  │
+│  │  1. roommate_matching  (stable matching)                     │  │
+│  │  2. ranking_scoring    (multi-objective ranking)             │  │
+│  │  3. route_planning     (time-windowed tours)                 │  │
+│  │  4. feedback_learning  (user/expert learning)                │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
                              │
          ┌───────────────────┼───────────────────┐
          ▼                   ▼                   ▼
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│   Firebase   │    │  External    │    │   ML Models  │
-│ Auth + Store │    │   Data APIs  │    │  (Compact)   │
+│   Firebase   │    │  External    │    │   Config     │
+│ Auth + Store │    │   Data APIs  │    │   Files      │
 └──────────────┘    └──────────────┘    └──────────────┘
-  • User Auth         • Zillow ZORI       • Scam Detection
-  • Listings DB       • Redfin Data       • Feature Extract
-  • User Profiles     • Columbia GIS      • Price Anomaly
-  • Matches           • COMET GTFS        • Image Analysis
+  • User Auth         • Zillow ZORI       • Preprocessing
+  • Listings DB       • Redfin Data       • Tools
+  • User Profiles     • Columbia GIS      • Agents
+  • Matches           • COMET GTFS        • Campus Data
                       • HUD FMR
                       • Census ACS
+````
+
+## Workflow Communication Flow
+
+### Workflow 1: Property Search
+
 ```
-
-## Agent Communication Flow
-
-```
-Property Search Workflow:
-─────────────────────────────
-
 User Request
     │
     ▼
-Orchestration Agent
+┌──────────────────────────────────┐
+│   DataIngestion.ingest_listings  │──► External APIs ──► Raw Listings
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│   listing_analyzer.analyze       │──► Risk Scores + Features
+│   compliance_checker.check       │──► Compliance Status
+│   image_analyzer.analyze         │──► Image Quality
+└──────────────┬───────────────────┘
+               │
+               ▼ (filtered listings)
+┌──────────────────────────────────┐
+│   ranking_scoring.rank()         │──► User Preferences ──► Ranked List
+│   (multi-objective scoring)       │
+└──────────────┬───────────────────┘
+               │
+               ▼
+          Return to User
+    (with explanations & scores)
+```
+
+### Workflow 2: Roommate Matching
+
+```
+User Surveys
     │
-    ├─► Data Ingestion Agent ──► External APIs ──► Raw Listings
-    │                                  │
-    │                                  ▼
-    ├─► Listing Analysis Agent ◄──── Listings ──► Risk Scores
-    │                                  │
-    │                                  ▼
-    ├─► Compliance Agent ◄───────── Listings ──► Compliant Set
-    │                │                │
-    │                └──► Knowledge Graph (FHA Rules)
-    │                                  │
-    │                                  ▼
-    ├─► Commute Agent ◄────────────── Listings ──► Commute Scores
-    │                │
-    │                └──► GTFS Data / Maps API
-    │                                  │
-    │                                  ▼
-    ├─► Ranking Agent ◄──────────── Scored Listings ──► Ranked List
-    │                │
-    │                └──► User Preferences
-    │                                  │
-    │                                  ▼
-    └─► Explanation Agent ◄────── Ranked List ──► Explanations
-                                      │
-                                      ▼
-                            [Human Review Checkpoint]
-                                      │
-                                      ▼
-                               Return to User
+    ▼
+┌──────────────────────────────────┐
+│ SurveyIngestion.process_survey   │──► FHA Compliance Check
+└──────────────┬───────────────────┘
+               │
+               ▼ (validated profiles)
+┌──────────────────────────────────┐
+│   roommate_matching.match()      │──► Stable Matching Algorithm
+│   (Gale-Shapley variant)         │
+└──────────────┬───────────────────┘
+               │
+               ▼
+          Matched Pairs
+    (with compatibility scores)
+```
+
+### Workflow 3: Tour Planning
+
+```
+Selected Properties + Class Schedule
+    │
+    ▼
+┌──────────────────────────────────┐
+│   route_planning.plan()          │──► Time Windows
+│   (TSP with constraints)         │──► Travel Times
+└──────────────┬───────────────────┘
+               │
+               ▼
+         Optimized Tour
+    (visit order + arrival times)
+```
+
+### Workflow 4: Feedback Learning
+
+```
+User Rating / Expert Correction
+    │
+    ▼
+┌──────────────────────────────────┐
+│   feedback_learning.process()    │──► Update Preferences
+│   (drift detection + learning)   │──► Model Corrections
+└──────────────┬───────────────────┘
+               │
+               ▼
+       Updated User Profile
 ```
 
 ## Data Flow Architecture
@@ -162,22 +204,20 @@ Orchestration Agent
 └─────────────────────┘
 ```
 
-## Agent Interaction Matrix
+## Component Interaction Matrix
 
-| Agent                  | Depends On                                | Output To                           |
-|------------------------|-------------------------------------------|-------------------------------------|
-| Data Ingestion         | External APIs                             | All Analysis Agents                 |
-| Knowledge Graph        | -                                         | Compliance, Matching, Ranking       |
-| Listing Analysis       | Data Ingestion                            | Ranking, Compliance                 |
-| Image Analysis         | Data Ingestion                            | Listing Analysis                    |
-| Roommate Matching      | Survey Ingestion, Knowledge Graph         | Explanation                         |
-| Ranking & Scoring      | Listing Analysis, Commute, Compliance     | Orchestrator                        |
-| Commute Scoring        | Data Ingestion, Knowledge Graph (GTFS)    | Ranking                             |
-| Route Planning         | Ranking, Knowledge Graph (Transit)        | Orchestrator                        |
-| Compliance & Safety    | Listing Analysis, Knowledge Graph (FHA)   | Ranking, Orchestrator               |
-| Explanation            | All Decision Agents                       | User Interface                      |
-| Feedback & Learning    | User Interface                            | All Agents (weight updates)         |
-| Orchestration          | All Agents                                | User Interface                      |
+| Component              | Type          | Depends On                          | Output To                    |
+|------------------------|---------------|-------------------------------------|------------------------------|
+| DataIngestion          | Preprocessing | External APIs                       | Workflows, Tools             |
+| SurveyIngestion        | Preprocessing | User Input                          | Agents (roommate_matching)   |
+| knowledge_graph        | Tool          | -                                   | compliance_checker, Agents   |
+| listing_analyzer       | Tool          | Listings                            | Workflows                    |
+| image_analyzer         | Tool          | Listings                            | Workflows                    |
+| compliance_checker     | Tool          | Listings, knowledge_graph           | Workflows                    |
+| roommate_matching      | Agent         | SurveyIngestion                     | User Interface               |
+| ranking_scoring        | Agent         | Listings, Tools                     | User Interface               |
+| route_planning         | Agent         | Properties, Schedules               | User Interface               |
+| feedback_learning      | Agent         | User Feedback                       | Config Updates               |
 
 ## Technology Stack Mapping
 

@@ -26,69 +26,89 @@ RentConnect-C3AN is a neurosymbolic mobile platform that helps university studen
 
 **Principle**: "Only things making autonomous decisions are agents"
 
-### System Layers
+### System Layers (Refactored)
 
 ```
-┌─────────────────────────────────────────┐
-│         USER INPUT / FEEDBACK           │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│     PREPROCESSING LAYER                 │
-│  • DataIngestion (multi-source)         │
-│  • SurveyIngestion (FHA-compliant)      │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│         TOOLS LAYER                     │
-│  • knowledge_graph (symbolic KB)        │
-│  • listing_analyzer (scam detection)    │
-│  • image_analyzer (photo quality)       │
-│  • compliance_checker (FHA/SC laws)     │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│      AGENT LAYER (Decision-Makers)      │
-│  1. roommate_matching                   │
-│  2. ranking_scoring                     │
-│  3. route_planning                      │
-│  4. feedback_learning                   │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│     WORKFLOWS (Direct Coordination)     │
-│  • Property Search                      │
-│  • Roommate Matching                    │
-│  • Tour Planning                        │
-└─────────────────────────────────────────┘
+                USER INPUT / FEEDBACK
+                        ↓
+         ┌──────────────────────────────┐
+         │  WORKFLOWS (main.py)         │
+         │  • Property Search           │
+         │  • Roommate Matching         │
+         │  • Tour Planning             │
+         │  • Feedback Learning         │
+         └──────────────┬───────────────┘
+                        ↓
+         ┌──────────────────────────────┐
+         │  PREPROCESSING LAYER         │
+         │  • DataIngestion             │
+         │  • SurveyIngestion           │
+         └──────────────┬───────────────┘
+                        ↓
+         ┌──────────────────────────────┐
+         │  TOOLS LAYER (singletons)    │
+         │  • knowledge_graph           │
+         │  • listing_analyzer          │
+         │  • image_analyzer            │
+         │  • compliance_checker        │
+         └──────────────┬───────────────┘
+                        ↓
+         ┌──────────────────────────────┐
+         │  AGENTS LAYER (singletons)   │
+         │  • roommate_matching         │
+         │  • ranking_scoring           │
+         │  • route_planning            │
+         │  • feedback_learning         │
+         └──────────────────────────────┘
+                        ↓
+              RESULTS TO USER
 ```
 
-### 4 Decision-Making Agents
+**Key Design Principles:**
+- ✅ Only decision-makers are agents
+- ✅ Data collection = preprocessing
+- ✅ Analysis/lookup = tools
+- ✅ Singleton pattern for tools & agents
+- ✅ Direct workflow coordination (no orchestration agent)
 
-1. **Roommate Matching Agent** (`roommate_matching`)
-   - Stable matching with constraint satisfaction (Gale-Shapley variant)
-   - Hard constraints: smoking, pets, quiet hours, budget
-   - Soft preferences: cleanliness, social level, schedule
-   - Personality: Big Five (OCEAN) compatibility
-   - **C³AN Metrics**: Stability Score (95%), Fairness Score (≤0.15 variance), Hard Constraint Satisfaction (100%)
+### 4 Decision-Making Agents (Singletons)
 
-2. **Ranking & Scoring Agent** (`ranking_scoring`)
-   - Multi-objective property ranking with Pareto optimality
-   - Criteria: price, commute, safety, amenities, lease terms
-   - User-tunable weights (instructability)
-   - **C³AN Metrics**: Pareto Efficiency (≥70% in top-10), Weight Correlation (r≥0.80), Score Attributability (100%)
+All agents are pre-instantiated as lowercase singleton variables for easy use:
 
-3. **Route Planning Agent** (`route_planning`)
-   - Time-windowed tour planning around class schedules
-   - Nearest-neighbor TSP heuristic
-   - Multi-modal transit optimization
-   - **C³AN Metrics**: Time Window Compliance (100%), Route Optimality (≥30% vs random), Tour Completion (≥80%)
+```python
+from src.agents import roommate_matching, ranking_scoring, route_planning, feedback_learning
 
-4. **Feedback & Learning Agent** (`feedback_learning`)
-   - Learns from user ratings and expert corrections
-   - Preference drift detection
-   - Expert-verified high-impact updates
-   - **C³AN Metrics**: Incorporation Rate (≥90%), Improvement Rate (≥10%), Expert Verification (100% for high-impact)
+# Direct usage - no instantiation needed
+result = roommate_matching.match(profiles)
+```
+
+1. **roommate_matching** (`RoommateMatchingAgent`)
+   - **Purpose**: Stable matching with constraint satisfaction
+   - **Algorithm**: Gale-Shapley variant
+   - **Input**: User profiles (hard constraints, soft preferences, personality)
+   - **Output**: Matches with compatibility scores, unmatched users, fairness metrics
+   - **C³AN**: Reasoning (9/10), Planning (8/10), Alignment (10/10), Explainability (9/10), Compactness (9/10)
+
+2. **ranking_scoring** (`RankingScoringAgent`)
+   - **Purpose**: Multi-objective property ranking with Pareto optimality
+   - **Algorithm**: Weighted scoring + Pareto frontier detection
+   - **Input**: Listings, user weights (price, commute, safety, amenities, lease)
+   - **Output**: Ranked listings, Pareto-optimal flags, score breakdowns
+   - **C³AN**: Reasoning (9/10), Instructability (10/10), Explainability (9/10), Grounding (8/10), Compactness (8/10)
+
+3. **route_planning** (`RoutePlanningAgent`)
+   - **Purpose**: Time-windowed tour planning around class schedules
+   - **Algorithm**: Nearest-neighbor TSP with time constraints
+   - **Input**: Properties, class schedule, viewing duration
+   - **Output**: Optimized tour with arrival/departure times, feasibility status
+   - **C³AN**: Planning (10/10), Reasoning (9/10), Grounding (9/10), Explainability (8/10), Compactness (9/10)
+
+4. **feedback_learning** (`FeedbackLearningAgent`)
+   - **Purpose**: Learn from user ratings and expert corrections
+   - **Algorithm**: Preference aggregation + drift detection
+   - **Input**: User ratings, expert corrections, preference updates
+   - **Output**: Updated preferences, impact assessments, drift alerts
+   - **C³AN**: Instructability (10/10), Adaptation (9/10), Safety (9/10), Explainability (8/10), Reliability (8/10)
 
 ## Project Structure
 
