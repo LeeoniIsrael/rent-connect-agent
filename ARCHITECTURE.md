@@ -8,62 +8,8 @@
 
 ## High-Level Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    React Native Mobile App                          │
-│                     (iOS/Android via Expo)                          │
-└────────────────────────────┬────────────────────────────────────────┘
-                             │ REST API / GraphQL
-                             ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                   Backend Services Layer                             │
-│                  (Vercel / Google Cloud Functions)                   │
-│                                                                      │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │                    WORKFLOWS                                  │  │
-│  │  • Property Search                                            │  │
-│  │  • Roommate Matching                                          │  │
-│  │  • Tour Planning                                              │  │
-│  │  • Feedback Learning                                          │  │
-│  │  (Direct coordination - no orchestration agent)               │  │
-│  └────────────────────┬─────────────────────────────────────────┘  │
-│                       │                                              │
-│  ┌────────────────────▼─────────────────────────────────────────┐  │
-│  │              PREPROCESSING LAYER                              │  │
-│  │  ├─ DataIngestion (multi-source data collection)             │  │
-│  │  └─ SurveyIngestion (FHA-compliant survey processing)        │  │
-│  └────────────────────┬─────────────────────────────────────────┘  │
-│                       │                                              │
-│  ┌────────────────────▼─────────────────────────────────────────┐  │
-│  │                 TOOLS LAYER (Singletons)                      │  │
-│  │  ├─ knowledge_graph (FHA rules, SC laws, campus zones)       │  │
-│  │  ├─ listing_analyzer (scam detection, feature extraction)    │  │
-│  │  ├─ image_analyzer (photo quality, authenticity)             │  │
-│  │  └─ compliance_checker (FHA/SC lease compliance)             │  │
-│  └────────────────────┬─────────────────────────────────────────┘  │
-│                       │                                              │
-│  ┌────────────────────▼─────────────────────────────────────────┐  │
-│  │            AGENT LAYER (Decision-Makers)                      │  │
-│  │  1. roommate_matching  (stable matching)                     │  │
-│  │  2. ranking_scoring    (multi-objective ranking)             │  │
-│  │  3. route_planning     (time-windowed tours)                 │  │
-│  │  4. feedback_learning  (user/expert learning)                │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-                             │
-         ┌───────────────────┼───────────────────┐
-         ▼                   ▼                   ▼
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│   Firebase   │    │  External    │    │   Config     │
-│ Auth + Store │    │   Data APIs  │    │   Files      │
-└──────────────┘    └──────────────┘    └──────────────┘
-  • User Auth         • Zillow ZORI       • Preprocessing
-  • Listings DB       • Redfin Data       • Tools
-  • User Profiles     • Columbia GIS      • Agents
-  • Matches           • COMET GTFS        • Campus Data
-                      • HUD FMR
-                      • Census ACS
-````
+<img width="467" height="972" alt="High-level drawio" src="https://github.com/user-attachments/assets/4aa2f1df-4139-45e0-9d14-a4e12fe2fb08" />
+
 
 ## Workflow Communication Flow
 
