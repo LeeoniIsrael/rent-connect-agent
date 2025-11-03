@@ -1,0 +1,285 @@
+# Registry System Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         REGISTRY MANAGER (Unified Interface)                 │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────┐    │
+│  │ Core Functions:                                                     │    │
+│  │  • get_all_components()         • validate_workflow()              │    │
+│  │  • find_component(id)           • get_execution_plan()             │    │
+│  │  • get_component_instance(id)   • get_dependency_graph()           │    │
+│  │  • get_c3an_coverage()          • generate_system_report()         │    │
+│  └────────────────────────────────────────────────────────────────────┘    │
+└──────────────┬─────────────────────┬─────────────────────┬─────────────────┘
+               │                     │                     │
+               ▼                     ▼                     ▼
+┌──────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐
+│   AGENT REGISTRY     │  │    TOOL REGISTRY    │  │ PREPROCESSING REG.  │
+│                      │  │                     │  │                     │
+│ Manages: Agents      │  │ Manages: Tools      │  │ Manages: Prepro.    │
+│ Count: 4             │  │ Count: 4            │  │ Count: 2            │
+└──────────────────────┘  └─────────────────────┘  └─────────────────────┘
+           │                        │                        │
+           │                        │                        │
+    ┌──────▼──────┐         ┌──────▼──────┐        ┌───────▼────────┐
+    │  Component  │         │  Component  │        │   Component    │
+    │  Metadata   │         │  Metadata   │        │   Metadata     │
+    └─────────────┘         └─────────────┘        └────────────────┘
+
+
+════════════════════════════════════════════════════════════════════════════════
+                           COMPONENT METADATA STRUCTURE
+════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            AgentMetadata                                     │
+│                                                                              │
+│  IDENTITY                                                                    │
+│  ├─ agent_id: str                    (Unique identifier)                    │
+│  ├─ name: str                        (Human-readable name)                  │
+│  ├─ description: str                 (What it does)                         │
+│  └─ version: str                     (Semantic version)                     │
+│                                                                              │
+│  CLASSIFICATION                                                              │
+│  ├─ agent_type: AgentType            (DECISION_MAKER, PLANNER, etc.)       │
+│  └─ autonomy_level: AutonomyLevel    (LOW, MEDIUM, HIGH, FULL)             │
+│                                                                              │
+│  CAPABILITIES                                                                │
+│  ├─ decision_authority: List[str]    (What decisions it makes)             │
+│  └─ c3an_elements: List[C3ANElement] (Framework elements implemented)      │
+│                                                                              │
+│  INTERFACE                                                                   │
+│  ├─ input_schemas: List[InputSchema]    ┌──────────────────────┐          │
+│  │                                       │  InputSchema:        │          │
+│  │                                       │  • name              │          │
+│  │                                       │  • type              │          │
+│  │                                       │  • description       │          │
+│  │                                       │  • required (bool)   │          │
+│  │                                       │  • validation_rules  │          │
+│  └─ output_schemas: List[OutputSchema]  └──────────────────────┘          │
+│                                          ┌──────────────────────┐          │
+│                                          │  OutputSchema:       │          │
+│                                          │  • name              │          │
+│                                          │  • type              │          │
+│                                          │  • description       │          │
+│                                          │  • structure (dict)  │          │
+│                                          └──────────────────────┘          │
+│                                                                              │
+│  DEPENDENCIES                                                                │
+│  ├─ depends_on: List[str]            (Component IDs this needs)            │
+│  └─ provides_to: List[str]           (Components that consume this)        │
+│                                                                              │
+│  CONFIGURATION                                                               │
+│  ├─ config_module: str               (Where to find config)                │
+│  ├─ module_path: str                 (Python import path)                  │
+│  ├─ class_name: str                  (Class name)                          │
+│  └─ singleton_instance: str          (Instance variable name)              │
+│                                                                              │
+│  OPERATIONAL                                                                 │
+│  ├─ max_retries: int                 (Retry attempts)                      │
+│  ├─ timeout_seconds: int             (Execution timeout)                   │
+│  ├─ requires_human_review: bool      (Human-in-loop flag)                  │
+│  ├─ review_conditions: List[str]     (When to request review)              │
+│  └─ sla_requirements: Dict           (Performance requirements)            │
+│                                                                              │
+│  DOCUMENTATION                                                               │
+│  ├─ readme_path: str                 (Path to README)                      │
+│  ├─ evaluation_doc_path: str         (Path to evaluation docs)             │
+│  └─ example_usage: str               (Code example)                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════════════════════
+                              WORKFLOW DEFINITION
+════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        WorkflowDefinition                                    │
+│                                                                              │
+│  ├─ workflow_id: str                                                        │
+│  ├─ name: str                                                               │
+│  ├─ description: str                                                        │
+│  ├─ preprocessors: List[str]         (Preprocessor component IDs)          │
+│  ├─ tools: List[str]                 (Tool component IDs)                  │
+│  ├─ agents: List[str]                (Agent component IDs)                 │
+│  └─ execution_order: List[str]       (Ordered sequence of all IDs)         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            REGISTERED COMPONENTS
+════════════════════════════════════════════════════════════════════════════════
+
+┌────────────────────────────────────┐
+│         AGENTS (4)                 │
+├────────────────────────────────────┤
+│ 1. ranking_scoring                 │
+│    Type: DECISION_MAKER            │
+│    Autonomy: HIGH                  │
+│    C³AN: Reasoning, Explain,       │
+│          Instructability           │
+│                                    │
+│ 2. roommate_matching               │
+│    Type: MATCHER                   │
+│    Autonomy: HIGH                  │
+│    C³AN: Reasoning, Planning,      │
+│          Alignment, Safety         │
+│                                    │
+│ 3. route_planning                  │
+│    Type: PLANNER                   │
+│    Autonomy: MEDIUM                │
+│    C³AN: Planning, Reasoning,      │
+│          Grounding                 │
+│                                    │
+│ 4. feedback_learning               │
+│    Type: LEARNER                   │
+│    Autonomy: MEDIUM                │
+│    C³AN: Instructability,          │
+│          Adaptability, Safety      │
+└────────────────────────────────────┘
+
+┌────────────────────────────────────┐
+│          TOOLS (4)                 │
+├────────────────────────────────────┤
+│ 1. listing_analyzer                │
+│    Capabilities:                   │
+│    • Scam Detection                │
+│    • Feature Extraction            │
+│    • Verification                  │
+│                                    │
+│ 2. image_analyzer                  │
+│    Capabilities:                   │
+│    • Image Analysis                │
+│    • Verification                  │
+│                                    │
+│ 3. compliance_checker              │
+│    Capabilities:                   │
+│    • Compliance Check              │
+│    • Safety Scoring                │
+│    • Rule Reasoning                │
+│                                    │
+│ 4. knowledge_graph                 │
+│    Capabilities:                   │
+│    • Knowledge Query               │
+│    • Rule Reasoning                │
+│    • Compliance Check              │
+└────────────────────────────────────┘
+
+┌────────────────────────────────────┐
+│      PREPROCESSORS (2)             │
+├────────────────────────────────────┤
+│ 1. data_ingestion                  │
+│    Sources: API, File              │
+│    Quality: Dedup, Normalize       │
+│    Outputs: Listings, Transit      │
+│                                    │
+│ 2. survey_ingestion                │
+│    Sources: User Input             │
+│    Quality: FHA Compliance         │
+│    Outputs: Validated Profiles     │
+└────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════════════════════
+                             WORKFLOW: Property Search
+════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│  Step 1: data_ingestion (Preprocessor)                                      │
+│    ↓                                                                         │
+│    • Ingest listings from Zillow, Redfin, Columbia GIS                      │
+│    • Clean, deduplicate, normalize                                          │
+│    • Output: List of property listings                                      │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Step 2: listing_analyzer (Tool)                                            │
+│    ↓                                                                         │
+│    • Analyze text for scam patterns                                         │
+│    • Extract features (amenities, policies)                                 │
+│    • Output: Risk scores, extracted features                                │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Step 3: image_analyzer (Tool)                                              │
+│    ↓                                                                         │
+│    • Assess photo quality                                                   │
+│    • Detect stock photos                                                    │
+│    • Output: Image quality scores                                           │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Step 4: compliance_checker (Tool)                                          │
+│    ↓                                                                         │
+│    • Validate FHA compliance                                                │
+│    • Check SC lease laws                                                    │
+│    • Compute safety scores                                                  │
+│    • Output: Compliance status, violations                                  │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Step 5: ranking_scoring (Agent) ← DECISION POINT                           │
+│    ↓                                                                         │
+│    • Apply user preferences                                                 │
+│    • Compute multi-objective scores                                         │
+│    • Identify Pareto-optimal listings                                       │
+│    • Generate explanations                                                  │
+│    • Output: Ranked list with scores                                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════════════════════
+                           REGISTRY QUERY PATTERNS
+════════════════════════════════════════════════════════════════════════════════
+
+1. DISCOVERY
+   registry_manager.get_all_components()
+   → {"agents": [...], "tools": [...], "preprocessors": [...]}
+
+2. CAPABILITY SEARCH
+   agent_registry.find_agents_by_capability(C3ANElement.EXPLAINABILITY)
+   → [ranking_scoring, roommate_matching, route_planning, feedback_learning]
+
+3. COMPONENT LOOKUP
+   registry_manager.find_component("ranking_scoring")
+   → {"type": "agent", "metadata": AgentMetadata(...)}
+
+4. INSTANCE RETRIEVAL
+   registry_manager.get_component_instance("ranking_scoring")
+   → RankingScoringAgent instance (ready to use)
+
+5. WORKFLOW VALIDATION
+   registry_manager.validate_workflow("property_search")
+   → {"valid": True, "issues": []}
+
+6. EXECUTION PLANNING
+   registry_manager.get_workflow_execution_plan("property_search")
+   → [
+       {"component_id": "data_ingestion", "type": "preprocessor", ...},
+       {"component_id": "listing_analyzer", "type": "tool", ...},
+       ...
+     ]
+
+7. DEPENDENCY ANALYSIS
+   registry_manager.get_all_dependencies("ranking_scoring")
+   → {"data_ingestion", "listing_analyzer", "compliance_checker"}
+
+
+════════════════════════════════════════════════════════════════════════════════
+                                  KEY BENEFITS
+════════════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────┐
+│ ✓ Dynamic Discovery              │  Find components by capability
+│ ✓ Validation                     │  Check before execution
+│ ✓ Documentation                  │  Living docs with schemas
+│ ✓ Dependency Management          │  Automatic resolution
+│ ✓ Flexibility                    │  Easy to extend
+│ ✓ Testing                        │  Simplifies mocking
+│ ✓ Orchestration                  │  Plan execution
+│ ✓ Monitoring                     │  Track health & performance
+└──────────────────────────────────┘
+```
