@@ -2,7 +2,7 @@
 
 ## What Was Created
 
-I've implemented a comprehensive **agent registry system** for your RentConnect-C3AN multi-agent project. This registry system is based on industry-standard design patterns used in microservices and multi-agent systems for component discovery, orchestration, and management.
+I've implemented a comprehensive **agent registry system**. This registry system is based on industry-standard design patterns used in microservices and multi-agent systems for component discovery, orchestration, and management.
 
 ## Files Created
 
