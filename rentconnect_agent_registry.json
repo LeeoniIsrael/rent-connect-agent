@@ -1,0 +1,165 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "registry_type": "agent_registry",
+    "compatible_protocols": ["a2a", "mcp"],
+    "description": "RentConnect-C3AN agent registry listing available agents, their input/output data streams, and core capabilities for student housing search, roommate matching, and tour planning."
+  },
+  "global_protocols": ["a2a", "mcp"],
+  "agents": [
+    {
+      "id": "data-ingestion-agent",
+      "name": "DataIngestionAgent",
+      "description": "Collects rental listings, transit data, and safety information from multiple external sources.",
+      "capabilities": ["data collection", "deduplication", "normalization"],
+      "input_data_streams": {
+        "mandatory": ["data_sources"],
+        "optional": ["filters", "location_bounds"]
+      },
+      "output_data_streams": {
+        "mandatory": ["cleaned_listings", "transit_data"],
+        "optional": ["market_data", "safety_data"]
+      }
+    },
+    {
+      "id": "survey-ingestion-agent",
+      "name": "SurveyIngestionAgent",
+      "description": "Processes roommate preference surveys with FHA compliance validation.",
+      "capabilities": ["survey processing", "FHA compliance", "profile validation"],
+      "input_data_streams": {
+        "mandatory": ["survey_response"],
+        "optional": ["user_metadata"]
+      },
+      "output_data_streams": {
+        "mandatory": ["validated_profile"],
+        "optional": ["compliance_warnings"]
+      }
+    },
+    {
+      "id": "listing-analyzer-agent",
+      "name": "ListingAnalyzerAgent",
+      "description": "Analyzes listings for scam detection, feature extraction, and price anomaly detection.",
+      "capabilities": ["scam detection", "feature extraction", "price validation"],
+      "input_data_streams": {
+        "mandatory": ["listing_data"],
+        "optional": ["market_context"]
+      },
+      "output_data_streams": {
+        "mandatory": ["risk_score", "extracted_features"],
+        "optional": ["verification_status", "price_anomaly_flag"]
+      }
+    },
+    {
+      "id": "image-analyzer-agent",
+      "name": "ImageAnalyzerAgent",
+      "description": "Analyzes property photos for quality and authenticity.",
+      "capabilities": ["image quality assessment", "stock photo detection"],
+      "input_data_streams": {
+        "mandatory": ["image_urls"],
+        "optional": ["listing_context"]
+      },
+      "output_data_streams": {
+        "mandatory": ["quality_score"],
+        "optional": ["authenticity_flags", "per_image_scores"]
+      }
+    },
+    {
+      "id": "compliance-checker-agent",
+      "name": "ComplianceCheckerAgent",
+      "description": "Validates listings against Fair Housing Act, SC lease laws, and safety requirements.",
+      "capabilities": ["FHA compliance", "lease validation", "safety scoring"],
+      "input_data_streams": {
+        "mandatory": ["listing_data"],
+        "optional": ["check_types", "policy_rules"]
+      },
+      "output_data_streams": {
+        "mandatory": ["compliance_status", "safety_score"],
+        "optional": ["violations", "warnings"]
+      }
+    },
+    {
+      "id": "knowledge-graph-agent",
+      "name": "KnowledgeGraphAgent",
+      "description": "Stores and queries symbolic knowledge including FHA rules, SC laws, and entity relationships.",
+      "capabilities": ["knowledge query", "rule reasoning", "entity management"],
+      "input_data_streams": {
+        "mandatory": ["query_type"],
+        "optional": ["filters", "entity_id"]
+      },
+      "output_data_streams": {
+        "mandatory": ["query_results"],
+        "optional": ["explanations", "rule_sources"]
+      }
+    },
+    {
+      "id": "ranking-scoring-agent",
+      "name": "RankingScoringAgent",
+      "description": "Multi-objective property ranking with Pareto optimality detection and explainable score breakdowns.",
+      "capabilities": ["multi-objective ranking", "pareto optimization", "score explanation"],
+      "input_data_streams": {
+        "mandatory": ["listings", "user_preferences"],
+        "optional": ["destination_coords", "hard_constraints"]
+      },
+      "output_data_streams": {
+        "mandatory": ["ranked_listings", "overall_scores"],
+        "optional": ["pareto_frontier", "score_explanations"]
+      }
+    },
+    {
+      "id": "roommate-matching-agent",
+      "name": "RoommateMatchingAgent",
+      "description": "Stable matching with constraint satisfaction and fairness guarantees using Gale-Shapley variant.",
+      "capabilities": ["stable matching", "constraint satisfaction", "fairness validation"],
+      "input_data_streams": {
+        "mandatory": ["user_profiles"],
+        "optional": ["listing_context", "group_preferences"]
+      },
+      "output_data_streams": {
+        "mandatory": ["matches", "compatibility_scores"],
+        "optional": ["unmatched_users", "fairness_metrics"]
+      }
+    },
+    {
+      "id": "route-planning-agent",
+      "name": "RoutePlanningAgent",
+      "description": "Time-windowed tour planning using nearest-neighbor TSP heuristic with class schedule constraints.",
+      "capabilities": ["tour optimization", "time-window planning", "travel estimation"],
+      "input_data_streams": {
+        "mandatory": ["properties_to_visit"],
+        "optional": ["class_schedule", "start_time", "transport_mode"]
+      },
+      "output_data_streams": {
+        "mandatory": ["optimized_route", "feasibility_status"],
+        "optional": ["time_violations", "alternative_suggestions"]
+      }
+    },
+    {
+      "id": "feedback-learning-agent",
+      "name": "FeedbackLearningAgent",
+      "description": "Processes user and expert feedback to improve system recommendations through preference adaptation.",
+      "capabilities": ["preference learning", "drift detection", "model correction"],
+      "input_data_streams": {
+        "mandatory": ["feedback_type", "feedback_data"],
+        "optional": ["user_context", "expert_confidence"]
+      },
+      "output_data_streams": {
+        "mandatory": ["updated_preferences"],
+        "optional": ["drift_alerts", "correction_log"]
+      }
+    },
+    {
+      "id": "orchestration-agent",
+      "name": "OrchestrationAgent",
+      "description": "Main coordinator handling workflow execution, agent communication, and human-in-the-loop oversight.",
+      "capabilities": ["workflow coordination", "agent routing", "human oversight"],
+      "input_data_streams": {
+        "mandatory": ["workflow_type", "user_request"],
+        "optional": ["override_params", "review_checkpoints"]
+      },
+      "output_data_streams": {
+        "mandatory": ["workflow_result", "execution_status"],
+        "optional": ["audit_trail", "review_requests"]
+      }
+    }
+  ]
+}
