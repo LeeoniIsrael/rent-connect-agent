@@ -1,444 +1,356 @@
-# RentConnect-C3AN: Neurosymbolic Student Housing & Roommate Orchestration
+# RentConnect-C3AN: Multi-Agent Student Housing System
 
 ![C3AN Compliant](https://img.shields.io/badge/C3AN-Custom%20%7C%20Compact%20%7C%20Composite-blue)
-![Python](https://img.shields.io/badge/Python-3.9%2B-green)
-![React Native](https://img.shields.io/badge/React%20Native-0.72-61dafb)
+![Python](https://img.shields.io/badge/Python-3.11%2B-green)
+![Status](https://img.shields.io/badge/Status-Working%20Prototype-brightgreen)
 
-## Overview
+## What Is This?
 
-RentConnect-C3AN is a neurosymbolic mobile platform that helps university students find safe, affordable off-campus housing and compatible roommates. It implements the **C³AN (Custom, Compact, and Composite AI Systems)** framework with:
+RentConnect helps college students find safe off-campus housing and compatible roommates using AI agents that work together. Think of it as a smart system where different "agents" handle different tasks - one finds properties, another checks if they're safe, another matches you with roommates, etc.
 
-- **Neural modules**: Parse messy listings, images, and preferences
-- **Symbolic knowledge graph**: Encodes Fair Housing rules, campus zones, lease constraints, transit data
-- **Composite planning**: Multi-objective ranking, stable matching, time-windowed routing
-- **Human-in-the-loop**: Trust and safety review checkpoints
+![System Workflow](diagram.png)
 
-### C³AN Foundation Elements Implemented
+## Why C³AN?
 
-✅ **Reliability & Consistency**: Deterministic pipelines, property deduplication  
-✅ **Alignment & Safety**: FHA-aware filters, prohibited criteria blocking  
-✅ **Grounding & Attribution**: Link outputs to real sources and rules  
-✅ **Interpretability & Explainability**: User-facing rationales with drill-downs  
-✅ **Reasoning & Planning**: Multi-criteria scoring, constraint satisfaction, route optimization  
-✅ **Instructability**: User-tunable weights without retraining  
+**C³AN = Custom, Compact, Composite AI Systems**
 
-## Refactored Architecture (October 2024)
+- **Custom**: Built specifically for student housing (not generic)
+- **Compact**: Lightweight agents that are fast and efficient  
+- **Composite**: Multiple specialized agents working together
 
-**Principle**: "Only things making autonomous decisions are agents"
+### What Makes It Safe & Smart
 
-### System Layers (Refactored)
+✅ **Fair Housing Compliant**: Blocks discriminatory filters automatically  
+✅ **Scam Detection**: Analyzes listings to catch fake properties  
+✅ **Explainable Decisions**: Shows you WHY each property was ranked that way  
+✅ **Learning System**: Gets better from your feedback  
+✅ **Multi-Objective**: Balances price, commute, safety, and preferences  
 
+
+## How It Works (3 Main Workflows)
+
+### 1. 🏠 Property Search
 ```
-                USER INPUT / FEEDBACK
-                        ↓
-         ┌──────────────────────────────┐
-         │  WORKFLOWS (main.py)         │
-         │  • Property Search           │
-         │  • Roommate Matching         │
-         │  • Tour Planning             │
-         │  • Feedback Learning         │
-         └──────────────┬───────────────┘
-                        ↓
-         ┌──────────────────────────────┐
-         │  PREPROCESSING LAYER         │
-         │  • DataIngestion             │
-         │  • SurveyIngestion           │
-         └──────────────┬───────────────┘
-                        ↓
-         ┌──────────────────────────────┐
-         │  TOOLS LAYER (singletons)    │
-         │  • knowledge_graph           │
-         │  • listing_analyzer          │
-         │  • image_analyzer            │
-         │  • compliance_checker        │
-         └──────────────┬───────────────┘
-                        ↓
-         ┌──────────────────────────────┐
-         │  AGENTS LAYER (singletons)   │
-         │  • roommate_matching         │
-         │  • ranking_scoring           │
-         │  • route_planning            │
-         │  • feedback_learning         │
-         └──────────────────────────────┘
-                        ↓
-              RESULTS TO USER
+You search → System collects listings → Analyzes for scams → 
+Checks compliance → Ranks by your preferences → Shows top 5
 ```
 
-**Key Design Principles:**
-- ✅ Only decision-makers are agents
-- ✅ Data collection = preprocessing
-- ✅ Analysis/lookup = tools
-- ✅ Singleton pattern for tools & agents
-- ✅ Direct workflow coordination (no orchestration agent)
+**What runs:**
+- `DataIngestionAgent` - Collects listings from Zillow, Redfin, etc.
+- `ListingAnalyzerAgent` - Detects scams and extracts features
+- `ComplianceCheckerAgent` - Verifies FHA & safety rules
+- `RankingScoringAgent` - Ranks properties by what you care about
 
-### 4 Decision-Making Agents (Singletons)
+### 2. 👥 Roommate Matching  
+```
+You fill survey → System validates it → Matches you with compatible people → 
+Shows compatibility scores
+```
 
-All agents are pre-instantiated as lowercase singleton variables for easy use:
+**What runs:**
+- `SurveyIngestionAgent` - Validates your survey responses
+- `KnowledgeGraphAgent` - Checks Fair Housing rules
+- `RoommateMatchingAgent` - Finds your best matches
 
+### 3. 🗺️ Tour Planning
+```
+You pick properties → System plans optimal route → 
+Fits around your class schedule → Gives you tour itinerary
+```
+
+**What runs:**
+- `RankingScoringAgent` - Selects top properties
+- `RoutePlanningAgent` - Plans efficient tour route
+
+### Plus: Learning Loop
+The `FeedbackLearningAgent` learns from your ratings and improves recommendations over time.
+
+## Quick Start (Try It Now!)
+
+### Option 1: Run Everything (Recommended)
+```bash
+python3 quickstart.py
+```
+**What this does:** Interactive menu to run demos and see the system in action
+
+### Option 2: Run Full System Demo
+```bash
+python3 system_implementation.py
+```
+**What this does:** Runs all 3 workflows automatically and shows results
+
+### Option 3: See Agent Connections
+```bash
+python3 agent_connections_example.py
+```
+**What this does:** Shows step-by-step how agents pass data to each other
+
+## File Guide (What's What)
+
+### 🚀 **Main Files** (Start here)
+- **`quickstart.py`** - Interactive menu to run demos
+- **`system_implementation.py`** - Complete working system with all workflows
+- **`agent_connections_example.py`** - Shows how agents connect
+
+### 📋 **Registry Files** (Agent definitions)
+- **`rentconnect_agent_registry.json`** - Official agent registry (JSON format)
+- **`agent_registry.json`** - Old registry (use rentconnect version instead)
+
+### 🔧 **Config Files**
+- **`config.py`** - Main configuration settings
+- **`config/`** - Agent-specific configs
+
+### 📁 **Source Code** (`src/`)
+```
+src/
+├── agents/              ← 11 AI agents (the brain)
+│   ├── roommate_matching/
+│   ├── ranking_scoring/
+│   ├── route_planning/
+│   └── feedback_learning/
+├── tools/               ← Analysis utilities
+│   ├── listing_analyzer.py
+│   ├── image_analyzer.py
+│   ├── compliance_checker.py
+│   └── knowledge_graph.py
+└── preprocessing/       ← Data collection
+    ├── data_ingestion.py
+    └── survey_ingestion.py
+```
+
+### 📊 **Documentation**
+- **`README.md`** - This file (overview & how-to)
+- **`SYSTEM_README.md`** - Technical system documentation
+- **`workflow_diagrams.txt`** - Canva-ready workflow diagrams
+- **`IMPLEMENTATION_SUMMARY.py`** - What we built summary
+
+### 🧪 **Testing**
+- **`test_system.py`** - Quick system verification
+- **`main.py`** - Example workflow usage
+
+## The 11 Agents (What Each One Does)
+
+### 📥 **Data Collection** (Preprocessing)
+1. **DataIngestionAgent** - Collects rental listings from Zillow, Redfin, Craigslist
+2. **SurveyIngestionAgent** - Validates your roommate survey responses
+
+### 🔍 **Analysis** (Tools)
+3. **ListingAnalyzerAgent** - Detects scam listings, extracts features
+4. **ImageAnalyzerAgent** - Checks if property photos are authentic
+5. **ComplianceCheckerAgent** - Verifies Fair Housing Act & safety compliance
+6. **KnowledgeGraphAgent** - Looks up housing laws and rules
+
+### 🎯 **Decision Making** (Main Agents)
+7. **RankingScoringAgent** - Ranks properties by your preferences
+8. **RoommateMatchingAgent** - Finds compatible roommates for you
+9. **RoutePlanningAgent** - Plans optimal property tour routes
+
+### 🧠 **Learning**
+10. **FeedbackLearningAgent** - Learns from your ratings to improve
+
+### 🎼 **Coordination**
+11. **OrchestrationAgent** - Coordinates all the agents (the conductor)
+
+## Code Examples
+
+### Example 1: Search for Properties
 ```python
-from src.agents import roommate_matching, ranking_scoring, route_planning, feedback_learning
-
-# Direct usage - no instantiation needed
-result = roommate_matching.match(profiles)
-```
-
-1. **roommate_matching** (`RoommateMatchingAgent`)
-   - **Purpose**: Stable matching with constraint satisfaction
-   - **Algorithm**: Gale-Shapley variant
-   - **Input**: User profiles (hard constraints, soft preferences, personality)
-   - **Output**: Matches with compatibility scores, unmatched users, fairness metrics
-   - **C³AN**: Reasoning (9/10), Planning (8/10), Alignment (10/10), Explainability (9/10), Compactness (9/10)
-
-2. **ranking_scoring** (`RankingScoringAgent`)
-   - **Purpose**: Multi-objective property ranking with Pareto optimality
-   - **Algorithm**: Weighted scoring + Pareto frontier detection
-   - **Input**: Listings, user weights (price, commute, safety, amenities, lease)
-   - **Output**: Ranked listings, Pareto-optimal flags, score breakdowns
-   - **C³AN**: Reasoning (9/10), Instructability (10/10), Explainability (9/10), Grounding (8/10), Compactness (8/10)
-
-3. **route_planning** (`RoutePlanningAgent`)
-   - **Purpose**: Time-windowed tour planning around class schedules
-   - **Algorithm**: Nearest-neighbor TSP with time constraints
-   - **Input**: Properties, class schedule, viewing duration
-   - **Output**: Optimized tour with arrival/departure times, feasibility status
-   - **C³AN**: Planning (10/10), Reasoning (9/10), Grounding (9/10), Explainability (8/10), Compactness (9/10)
-
-4. **feedback_learning** (`FeedbackLearningAgent`)
-   - **Purpose**: Learn from user ratings and expert corrections
-   - **Algorithm**: Preference aggregation + drift detection
-   - **Input**: User ratings, expert corrections, preference updates
-   - **Output**: Updated preferences, impact assessments, drift alerts
-   - **C³AN**: Instructability (10/10), Adaptation (9/10), Safety (9/10), Explainability (8/10), Reliability (8/10)
-
-## Project Structure
-
-```
-rent-connect-agent/
-├── src/
-│   ├── preprocessing/           # Data collection & cleaning
-│   │   ├── data_ingestion.py   # Multi-source listings (Zillow, Redfin, GIS)
-│   │   └── survey_ingestion.py # FHA-compliant survey processing
-│   ├── tools/                   # Analysis & lookup utilities (singletons)
-│   │   ├── knowledge_graph.py  # Symbolic KB (FHA rules, campus zones)
-│   │   ├── listing_analyzer.py # Scam detection, feature extraction
-│   │   ├── image_analyzer.py   # Photo quality & authenticity
-│   │   └── compliance_checker.py # FHA & SC lease law compliance
-│   └── agents/                  # 4 decision-making agents
-│       ├── roommate_matching/   # Stable matching agent
-│       │   ├── README.md       # Full documentation
-│       │   ├── config.py       # Agent-specific settings
-│       │   ├── evaluation.md   # C³AN metrics definitions
-│       │   └── agent.py        # Implementation
-│       ├── ranking_scoring/     # Multi-objective ranking
-│       ├── route_planning/      # Time-windowed tour planning
-│       └── feedback_learning/   # Learning from feedback
-├── config/                      # Configuration layer
-│   ├── preprocessing_config.py  # Data ingestion settings
-│   ├── tools_config.py         # Tool parameters
-│   └── agents_config.py        # Agent settings + HITL
-├── tests/                       # Unit & integration tests
-├── main.py                      # Workflow examples (no orchestration)
-├── test_system.py              # Quick verification script
-├── HOW_TO_RUN.md               # Simple usage guide
-├── QUICK_START.md              # Detailed examples
-├── IMPLEMENTATION_SUMMARY.md   # Refactoring documentation
-└── REFACTORING_GUIDE.md        # Migration details
-```
-
-## Quick Start
-
-### 1. Test the System
-```bash
-python test_system.py
-```
-
-### 2. Run Example Workflows
-```bash
-python main.py
-```
-
-### 3. Use in Your Code
-```python
-from src.agents import roommate_matching, ranking_scoring
-
-# Match roommates
-profiles = [...]  # User survey data
-result = roommate_matching.match(profiles)
-
-# Rank properties  
-listings = [...]  # Rental listings
-result = ranking_scoring.rank(listings, user_preferences, destination)
-```
-
-See `HOW_TO_RUN.md` for more examples.
-
-## Key Features
-│       │   └── knowledge_graph_agent.py     # Knowledge graph & rules
-│       ├── analysis/
-│       │   └── listing_analysis_agent.py    # Scam detection, risk scoring
-│       ├── matching/
-│       │   └── roommate_matching_agent.py   # Stable matching algorithm
-│       ├── ranking/
-│       │   └── ranking_agent.py             # Multi-criteria scoring
-│       ├── planning/
-│       │   └── route_planning_agent.py      # Tour planning, compliance
-│       ├── explanation/
-│       │   └── explanation_agent.py         # Explainability & feedback
-│       └── orchestration/
-│           └── orchestration_agent.py       # Workflow orchestrator
-├── requirements.txt                          # Python dependencies
-├── package.json                              # React Native dependencies
-└── README.md                                 # This file
-```
-
-## Dataset Sources
-
-### Core Housing Data
-- **Zillow ZORI**: Market rent benchmarks
-- **Redfin Rental Market**: Multifamily trends
-- **USA Housing Listings (Kaggle)**: Prototype data
-- **Craigslist Rentals (Kaggle)**: NLP training data
-
-### Columbia/USC Context
-- **City of Columbia Open Data**: Zoning, neighborhoods, code enforcement
-- **Richland County GIS**: Parcels, addresses, zoning
-- **COMET GTFS**: Transit routes and schedules
-
-### Compliance & Affordability
-- **HUD Fair Market Rents**: Affordability benchmarks
-- **Census ACS**: Demographics, housing, income
-- **Big Five Personality Test**: Roommate compatibility training
-
-## Key Workflows
-
-### 1. Property Search & Ranking
-```
-Ingest Listings → Risk Analysis → Compliance Check → Commute Scoring → 
-Multi-Criteria Ranking → Explanation Generation → [Human Review]
-```
-
-### 2. Roommate Matching
-```
-Survey Ingestion → FHA Compliance Check → Stable Matching → 
-Fairness Validation → Explanation Generation → [Human Review]
-```
-
-### 3. Tour Planning
-```
-Select Properties → Load Class Schedule → Route Optimization → 
-Time Window Validation → Explanation Generation
-```
-
-### 4. Listing Verification
-```
-Risk Analysis → Compliance Check → Image Analysis → 
-Verification Report → [Human Review if flagged]
-```
-
-## Installation
-
-### Backend (Python)
-
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your Firebase credentials, API keys, etc.
-```
-
-### Frontend (React Native)
-
-```bash
-# Install Node dependencies
-npm install
-
-# Start Expo development server
-npm start
-
-# Run on device
-npm run ios     # iOS
-npm run android # Android
-```
-
-## Usage Examples
-
-### Initialize Orchestration Agent
-
-```python
-from src.agents.orchestration.orchestration_agent import OrchestrationAgent
-from src.agents.base_agent import AgentContext
-from datetime import datetime
-import uuid
+from system_implementation import OrchestrationAgent
 
 # Create orchestrator
 orchestrator = OrchestrationAgent()
 
-# Create context
-context = AgentContext(
-    session_id=str(uuid.uuid4()),
-    user_id="student123",
-    timestamp=datetime.utcnow(),
-    metadata={'desired_amenities': ['parking', 'ac', 'laundry']}
-)
-
-# Run property search workflow
-result = orchestrator.process(
-    {
-        'workflow': 'property_search',
-        'workflow_input': {
-            'data_sources': ['zillow_zori', 'columbia_gis'],
-            'filters': {'city': 'Columbia', 'state': 'SC'},
-            'preferences': {
-                'weights': {
-                    'price': 0.35,
-                    'commute_time': 0.30,
-                    'safety_score': 0.20,
-                    'amenities_match': 0.15
-                }
-            },
-            'constraints': {
-                'max_budget': 1000,
-                'min_bedrooms': 1,
-                'max_commute_minutes': 30
+# Search for properties
+result = orchestrator.execute_workflow(
+    workflow_type="property_search",
+    user_request={
+        "sources": ["zillow", "redfin"],
+        "filters": {"city": "Columbia", "max_price": 1500},
+        "preferences": {
+            "weights": {
+                "price": 0.4,
+                "commute_time": 0.3,
+                "safety_score": 0.3
             }
-        },
-        'human_review': True
-    },
-    context
+        }
+    }
 )
 
-print(f"Found {result.result['total_ranked']} ranked listings")
-for listing in result.result['ranked_listings'][:3]:
-    print(f"  #{listing['rank']}: {listing['listing'].get('address')} - Score: {listing['overall_score']:.2f}")
+# See top properties
+print(result['results']['ranked_listings'][:5])
 ```
 
-### Roommate Matching
-
+### Example 2: Match Roommates
 ```python
-# Run roommate matching workflow
-result = orchestrator.process(
-    {
-        'workflow': 'roommate_matching',
-        'workflow_input': {
-            'profiles': [
-                {
-                    'user_id': 'student1',
-                    'hard_constraints': {'no_smoking': True, 'pet_policy': 'no_pets'},
-                    'soft_preferences': {'cleanliness': 8, 'social_level': 6},
-                    'personality': {'conscientiousness': 0.7, 'agreeableness': 0.8},
-                    'budget_range': (600, 900)
-                },
-                {
-                    'user_id': 'student2',
-                    'hard_constraints': {'no_smoking': True, 'pet_policy': 'no_pets'},
-                    'soft_preferences': {'cleanliness': 7, 'social_level': 5},
-                    'personality': {'conscientiousness': 0.8, 'agreeableness': 0.7},
-                    'budget_range': (650, 950)
-                }
-            ],
-            'match_type': 'one_to_one'
-        },
-        'human_review': False
-    },
-    context
+# Match roommates
+result = orchestrator.execute_workflow(
+    workflow_type="roommate_matching",
+    user_request={
+        "surveys": [
+            {
+                "user_id": "alice",
+                "hard_constraints": {"smoking": False, "pets": True},
+                "soft_preferences": {"cleanliness": 4, "social_level": 3}
+            },
+            {
+                "user_id": "bob",
+                "hard_constraints": {"smoking": False, "pets": True},
+                "soft_preferences": {"cleanliness": 4, "social_level": 4}
+            }
+        ]
+    }
 )
 
-print(f"Created {len(result.result['matches'])} matches")
+# See matches
+print(result['results']['matches'])
 ```
 
-## C³AN Compliance Features
+## Installation
 
-### Custom
-- **Student-specific**: .edu verification, academic year leases, cosigner flows
-- **USC-local**: Campus zones, COMET transit integration, Columbia safety data
+### Prerequisites
+- Python 3.11 or higher
+- pip (Python package manager)
 
-### Compact
-- **Lightweight models**: Distilled NLP, edge-friendly scoring
-- **Domain-scoped KG**: Focused knowledge graph for fast reasoning
-- **Server-side batching**: Optimize API calls and computations
-
-### Composite
-- **Neurosymbolic**: Neural feature extraction + symbolic rule enforcement
-- **Multi-agent orchestration**: Specialized agents coordinated by orchestrator
-- **Human-in-the-loop**: Review checkpoints for critical decisions
-
-## Testing
-
+### Setup (3 Steps)
 ```bash
-# Run Python tests
-pytest tests/ -v --cov=src
+# 1. Install Python dependencies
+pip install -r requirements.txt
 
-# Run React Native tests
-npm test
+# 2. Run a quick test
+python3 test_system.py
+
+# 3. Try the full demo
+python3 system_implementation.py
 ```
 
-## Deployment
+That's it! No database setup, no API keys needed (uses mock data for now).
 
-### Backend Services
+## Understanding the Agent Registry
+
+The **`rentconnect_agent_registry.json`** file is like a phone book for agents. It lists:
+- What each agent does
+- What data it needs (inputs)
+- What data it produces (outputs)
+- How agents can talk to each other
+
+**When to use it:**
+- Setting up agent connections
+- Understanding system architecture
+- Adding new agents
+- Debugging data flow issues
+
+## Understanding the Connections
+
+Agents pass data to each other like a relay race:
+
+```
+Property Search Flow:
+DataIngestion → ListingAnalyzer → ComplianceChecker → Ranking → Results
+      ↓              ↓                  ↓
+   listings      risk_scores      safety_scores
+
+Roommate Matching Flow:
+SurveyIngestion → KnowledgeGraph → RoommateMatching → Results
+       ↓               ↓                  ↓
+   profiles      fha_rules          matches
+```
+
+See **`agent_connection_mappings.py`** for complete connection details.
+
+## Project Status
+
+**✅ Working:** All 3 workflows functional with test data  
+**✅ Tested:** Property search, roommate matching, tour planning  
+**🚧 In Progress:** External API integrations, real database  
+**📋 Planned:** Mobile app, user authentication, payment processing
+
+## Data Sources (For Production)
+
+When ready for real deployment, you'll need:
+
+### Property Data
+- Zillow API (rental listings)
+- Apartments.com API
+- Craigslist scraping (with permission)
+
+### Location Data
+- Google Maps API (routing, commute times)
+- Transit data (bus schedules)
+
+### Compliance Data
+- Fair Housing Act rules database
+- State/local housing laws
+
+### User Data
+- Authentication system (Firebase, Auth0)
+- Survey responses database
+- Feedback and ratings
+
+## Troubleshooting
+
+### "Module not found" Error
 ```bash
-# Deploy to Google Cloud Functions
-gcloud functions deploy rentconnect-api \
-  --runtime python39 \
-  --trigger-http \
-  --entry-point api_handler
+# Make sure you're in the right directory
+cd rent-connect-agent
 
-# Or deploy to Vercel
-vercel deploy
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### Mobile App
+### "No such file" Error
 ```bash
-# Build for production
-expo build:ios
-expo build:android
+# Check you have the registry file
+ls rentconnect_agent_registry.json
+
+# If missing, it should be in the project root
 ```
 
-## Fair Housing Compliance
+### Agents Not Connecting
+```bash
+# Run the connection example to verify
+python3 agent_connections_example.py
+```
 
-This system implements Fair Housing Act safeguards:
-- ✅ Blocks discriminatory filters (race, religion, national origin, etc.)
-- ✅ Screens listing text for prohibited language
-- ✅ Flags potentially discriminatory preferences
-- ✅ Provides transparent appeals process
-- ✅ Audit logs for all decisions
+## Next Steps for Development
 
-## Metrics & Monitoring
+1. **This Week** (Week of Nov 18, 2025):
+   - Create data registry (define all data schemas)
+   - Identify knowledge assets needed (FHA rules, housing laws)
+   - List external APIs required
 
-Key metrics tracked:
-- **Lease conversion rate**: % of searches leading to signed leases
-- **Days to decision**: Time from search to lease signing
-- **Fraud detection**: False positive/negative rates for scam detection
-- **Match acceptance**: % of roommate matches accepted
-- **Tour efficiency**: Properties visited per available time window
+2. **Future Weeks**:
+   - Connect real APIs (Zillow, Google Maps)
+   - Build proper database
+   - Add authentication
+   - Create mobile app frontend
+
+## Learn More
+
+- **`SYSTEM_README.md`** - Deep technical documentation
+- **`workflow_diagrams.txt`** - Visual workflow diagrams for Canva
+- **`agent_connection_mappings.py`** - Complete connection reference
+- **`IMPLEMENTATION_SUMMARY.py`** - Summary of what was built
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+Want to add features or fix bugs?
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/cool-feature`)
+3. Make your changes
+4. Test with `python3 test_system.py`
+5. Submit a pull request
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) for details.
-
-## References
-
-1. **C³AN Framework**: [Link to C3AN paper]
-2. **Fair Housing Act**: 42 U.S.C. § 3601-3619
-3. **Stable Matching**: Gale-Shapley Algorithm
-4. **Datasets**: See "Dataset Sources" section above
+MIT License - Free to use, modify, and distribute.
 
 ## Contact
 
-For questions or support, contact the RentConnect team:
-- **Developer**: Leeon Israel
-- **Project**: RentConnect-C3AN
-- **Institution**: University of South Carolina (USC)
+**Developer:** Leeon Israel  
+**Institution:** University of South Carolina (USC)  
+**Project:** RentConnect-C3AN Multi-Agent Housing System
 
 ---
 
-**Built with C³AN principles: Custom, Compact, and Composite AI for trustworthy student housing.**
+**🎯 Goal:** Help students find safe, affordable housing with AI agents that actually explain their decisions.
