@@ -29,6 +29,8 @@ RentConnect helps college students find safe off-campus housing and compatible r
 
 ## How It Works (3 Main Workflows)
 
+**The Magic:** All workflows are driven by `rentconnect_agent_registry.json` — no hardcoded routing!
+
 ### 1. 🏠 Property Search
 ```
 You search → System collects listings → Analyzes for scams → 
@@ -67,34 +69,28 @@ The `FeedbackLearningAgent` learns from your ratings and improves recommendation
 
 ## Quick Start (Try It Now!)
 
-### Option 1: Run Everything (Recommended)
+### Run the System
 ```bash
-python3 quickstart.py
+python main.py
 ```
-**What this does:** Interactive menu to run demos and see the system in action
+**What this does:** Runs all 3 workflows and shows results in your terminal
 
-### Option 2: Run Full System Demo
-```bash
-python3 system_implementation.py
-```
-**What this does:** Runs all 3 workflows automatically and shows results
+### How It's Different Now
+✨ **Before:** 320+ lines of manual workflow code  
+✨ **Now:** 50 lines — the `Orchestrator` reads the registry and routes data automatically
 
-### Option 3: See Agent Connections
-```bash
-python3 agent_connections_example.py
-```
-**What this does:** Shows step-by-step how agents pass data to each other
+This is the **"Compact"** promise of C³AN in action.
 
 ## File Guide (What's What)
 
-### 🚀 **Main Files** (Start here)
-- **`quickstart.py`** - Interactive menu to run demos
-- **`system_implementation.py`** - Complete working system with all workflows
-- **`agent_connections_example.py`** - Shows how agents connect
+### 🚀 **Core Files** (Start here)
+- **`main.py`** - Entry point - runs all workflows
+- **`orchestrator.py`** - Registry-driven workflow engine (the "brain")
+- **`rentconnect_agent_registry.json`** - Agent registry (defines who talks to who)
 
-### 📋 **Registry Files** (Agent definitions)
-- **`rentconnect_agent_registry.json`** - Official agent registry (JSON format)
-- **`agent_registry.json`** - Old registry (use rentconnect version instead)
+### 📋 **Legacy Files** (Informational only)
+- **`quickstart.py`** - Old standalone demo
+- **`agent_registry.json`** - Generic C³AN registry (not RentConnect-specific)
 
 ### 🔧 **Config Files**
 - **`config.py`** - Main configuration settings
